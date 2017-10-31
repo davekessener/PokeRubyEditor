@@ -3,6 +3,7 @@ package model;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonValue;
@@ -18,11 +19,33 @@ public class Loader
 		mRoot = root.getAbsolutePath();
 	}
 	
+	public File getFile(String ... ps)
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(mRoot);
+		
+		for(String p : ps)
+		{
+			sb.append(File.separator).append(p);
+		}
+		
+		return new File(sb.toString());
+	}
+	
 	public JsonValue loadData(String type, String id)
 	{
 		try
 		{
-			return Json.parse(new FileReader(mRoot + "/data/" + type + "/" + id + ".json"));
+			String fn = mRoot + "/data/" + type + "/" + id + ".json";
+			
+			File f = new File(fn + ".bak");
+			
+			if(f.exists()) f.delete();
+			
+			Files.copy((new File(fn)).toPath(), f.toPath());
+			
+			return Json.parse(new FileReader(fn));
 		}
 		catch (IOException e)
 		{

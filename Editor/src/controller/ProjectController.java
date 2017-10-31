@@ -1,12 +1,22 @@
 package controller;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
+import com.eclipsesource.json.WriterConfig;
+
+import controller.map.MapController;
+import controller.tile.TilesetController;
+import controller.tilemap.TilemapController;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import model.Loader;
+import model.Map;
 import model.Project;
+import model.Tilemap;
 import model.Tileset;
 import view.MenuManager;
 import view.ProjectUI;
@@ -17,12 +27,14 @@ public class ProjectController implements Controller
 	private ProjectUI mUI;
 	private MenuManager mMenu;
 	private ContentController mContent;
+	private File mOpenFile;
 	
 	public ProjectController(File dir, MenuManager menu)
 	{
 		mProject = new Project(dir.getAbsolutePath() + "/data");
 		mUI = new ProjectUI((type, id) -> editItem(type, id));
 		mMenu = menu;
+		mOpenFile = null;
 
 		mUI.updateTree(dir.getName(), mProject.content);
 		
@@ -41,7 +53,8 @@ public class ProjectController implements Controller
 		{
 			return false;
 		}
-		
+
+		mMenu.setHandler("file:save", null);
 		mMenu.setHandler("file:close", null);
 		
 		return true;
@@ -49,7 +62,7 @@ public class ProjectController implements Controller
 	
 	private boolean closeResource()
 	{
-		if(mContent != null && mContent.needsSave())
+		if(mContent != null && mContent.needsSave().getValue())
 		{
 			if(!confirmExiting())
 			{
@@ -68,14 +81,36 @@ public class ProjectController implements Controller
 	private void editItem(String type, String id)
 	{
 		if(!closeResource()) return;
-		
+
+		Loader l = EditorController.Instance.getLoader();
+
 		if(type == "tileset")
 		{
-			Tileset ts = new Tileset();
-			ts.load(EditorController.Instance.getLoader().loadData(type, id));
+			Tileset ts = new Tileset();	
+			ts.load(l.loadData(type, id));
 			mContent = new TilesetController(ts);
-			mUI.setContent(mContent.getUI());
 		}
+		else if(type == "tilemap")
+		{
+			Tilemap tm = new Tilemap();
+			tm.load(l.loadData(type, id));
+			mContent = new TilemapController(tm);
+		}
+		else if(type == "map")
+		{
+			Map map = new Map();
+			map.load(l.loadData(type, id));
+			mContent = new MapController(map);
+		}
+
+		mUI.setContent(mContent.getUI());
+		mContent.needsSave().addListener(v -> changeSaveState());
+		mOpenFile = l.getFile("data", type, id + ".json");
+	}
+	
+	private void changeSaveState()
+	{
+		mMenu.setHandler("file:save", mContent.needsSave().getValue() ? () -> save() : null);
 	}
 	
 	private boolean confirmExiting()
@@ -86,7 +121,7 @@ public class ProjectController implements Controller
 		
 		if(confirm.getResult() == ButtonType.YES)
 		{
-			mContent.save();
+			save();
 			return true;
 		}
 		else if(confirm.getResult() == ButtonType.NO)
@@ -96,6 +131,20 @@ public class ProjectController implements Controller
 		else
 		{
 			return false;
+		}
+	}
+	
+	private void save()
+	{
+		try
+		{
+			FileWriter fw = new FileWriter(mOpenFile);
+			mContent.save().writeTo(fw, WriterConfig.PRETTY_PRINT);
+			fw.close();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
 		}
 	}
 }

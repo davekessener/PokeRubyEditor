@@ -21,6 +21,10 @@ public class Tileset implements JsonModel
 	
 	public int getTileCount() { return aTiles.size(); }
 	public Tile getTile(int i) { return aTiles.get(i); }
+	public Tile getTile(String id) { return aTiles.stream().filter(t -> t.getID().equals(id)).findFirst().get(); }
+	
+	public void addTile(String id, Tile t) { aTiles.add(t); t.setID(id); }
+	public void deleteTile(int i) { aTiles.remove(i); }
 	
 	@Override
 	public void load(JsonValue value)
@@ -92,6 +96,11 @@ public class Tileset implements JsonModel
 	public static class StaticTile extends Tile
 	{
 		private Vec2 vPosition;
+		
+		public StaticTile()
+		{
+			vPosition = new Vec2(0, 0);
+		}
 
 		@Override
 		public Vec2 getPosition()
@@ -109,7 +118,6 @@ public class Tileset implements JsonModel
 		{
 			super.load(value);
 			
-			vPosition = new Vec2(0, 0);
 			vPosition.load(value.asObject().get("at"));
 		}
 		
@@ -123,7 +131,14 @@ public class Tileset implements JsonModel
 	public static class AnimatedTile extends Tile
 	{
 		private int iPeriod;
-		private final List<Vec2> aFrames = new ArrayList<>();
+		private final List<Vec2> aFrames;
+		
+		public AnimatedTile()
+		{
+			aFrames = new ArrayList<>();
+			aFrames.add(new Vec2(0, 0));
+			iPeriod = 1;
+		}
 
 		public int getPeriod() { return iPeriod; }
 		public void setPeriod(int ms) { iPeriod = ms; }

@@ -34,6 +34,8 @@ public class ProjectUI implements UI
 			}
 		});
 		
+		mTree.prefHeightProperty().bind(mRoot.heightProperty());
+		
 		treeContainer.setContent(mTree);
 		
 		mRoot.setLeft(treeContainer);

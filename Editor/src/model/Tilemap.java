@@ -22,6 +22,7 @@ public class Tilemap implements JsonModel
 	public void setWidth(int w) { iWidth = w; }
 	public void setHeight(int h) { iHeight = h; }
 	
+	public String[][] getMeta() { return mMeta; }
 	public String getMeta(int x, int y) { return mMeta[x][y]; }
 	public void setMeta(int x, int y, String m) { mMeta[x][y] = m; }
 	
@@ -79,7 +80,7 @@ public class Tilemap implements JsonModel
 			JsonObject tag = value.asObject();
 
 			sOrder = tag.getString("order", null);
-			mTiles = Utils.LoadStringMatrix(iWidth, iHeight, tag.get("map"));
+			mTiles = Utils.LoadStringMatrix(iWidth, iHeight, tag.get("layer"));
 		}
 
 		@Override

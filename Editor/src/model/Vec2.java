@@ -31,4 +31,16 @@ public class Vec2 implements JsonModel
 	{
 		return new JsonArray().add(dx).add(dy);
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Integer.valueOf(dx).hashCode() * Integer.valueOf(dy).hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		return (o != null && o instanceof Vec2) ? (((Vec2) o).dx == dx && ((Vec2) o).dy == dy) : false;
+	}
 }

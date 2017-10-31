@@ -59,6 +59,7 @@ public class EditorUI implements UI, MenuManager
 	
 		m.getItems().addAll(
 			createMenuItem("file:open", "Open ..."),
+			createMenuItem("file:save", "Save"),
 			createMenuItem("file:close", "Close"),
 			new SeparatorMenuItem(),
 			createMenuItem("file:exit", "Quit")

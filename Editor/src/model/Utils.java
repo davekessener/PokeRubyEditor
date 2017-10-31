@@ -16,7 +16,8 @@ public class Utils
 			
 			for(int x = 0 ; x < w ; ++x)
 			{
-				a[x][y] = row.get(x).asString();
+				JsonValue v = row.get(x);
+				a[x][y] = v.isNull() ? null : v.asString();
 			}
 		}
 		
