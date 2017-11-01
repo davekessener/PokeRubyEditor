@@ -13,12 +13,12 @@ import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import lib.MenuManager;
 import model.Loader;
 import model.Map;
 import model.Project;
 import model.Tilemap;
 import model.Tileset;
-import view.MenuManager;
 import view.ProjectUI;
 
 public class ProjectController implements Controller
@@ -62,17 +62,15 @@ public class ProjectController implements Controller
 	
 	private boolean closeResource()
 	{
-		if(mContent != null && mContent.needsSave().getValue())
+		if(mContent != null)
 		{
-			if(!confirmExiting())
+			if(mContent.needsSave().getValue() && !confirmExiting())
 			{
 				return false;
 			}
-			else
-			{
-				mContent = null;
-				mUI.setContent(null);
-			}
+			
+			mContent = null;
+			mUI.setContent(null);
 		}
 		
 		return true;
@@ -110,7 +108,7 @@ public class ProjectController implements Controller
 	
 	private void changeSaveState()
 	{
-		mMenu.setHandler("file:save", mContent.needsSave().getValue() ? () -> save() : null);
+		mMenu.setHandler("file:save", (mContent != null && mContent.needsSave().getValue()) ? () -> save() : null);
 	}
 	
 	private boolean confirmExiting()

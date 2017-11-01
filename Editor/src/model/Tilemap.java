@@ -1,8 +1,11 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
@@ -11,8 +14,8 @@ public class Tilemap implements JsonModel
 	private String sTileset;
 	private int iWidth;
 	private int iHeight;
-	private List<Layer> aLayers;
-	private String[][] mMeta;
+	private java.util.Map<String, List<Layer>> mLayers;
+	private Layer mMeta;
 	
 	public String getTilesetID() { return sTileset; }
 	public int getWidth() { return iWidth; }
@@ -22,76 +25,90 @@ public class Tilemap implements JsonModel
 	public void setWidth(int w) { iWidth = w; }
 	public void setHeight(int h) { iHeight = h; }
 	
-	public String[][] getMeta() { return mMeta; }
-	public String getMeta(int x, int y) { return mMeta[x][y]; }
-	public void setMeta(int x, int y, String m) { mMeta[x][y] = m; }
+	public Layer getMeta() { return mMeta; }
 	
-	public int getLayerCount() { return aLayers.size(); }
-	public Layer getLayer(int i) { return aLayers.get(i); }
-	public void removeLayer(int i) { aLayers.remove(i); }
-
+	public List<Layer> getLayers(String id) { List<Layer> l = mLayers.get(id); return l == null ? new ArrayList<>() : l; }
+	
+	public void resize(int w, int h)
+	{
+		iWidth = w;
+		iHeight = h;
+		
+		for(List<Layer> ls : mLayers.values())
+		{
+			for(Layer l : ls)
+			{
+				l.resize(w, h);
+			}
+		}
+	}
+	
 	@Override
 	public void load(JsonValue value)
 	{
 		JsonObject tag = value.asObject();
+		JsonObject map = tag.get("map").asObject();
 		
 		sTileset = tag.getString("tileset", null);
 		iWidth = tag.getInt("width", 0);
 		iHeight = tag.getInt("height", 0);
 		
-		aLayers = new ArrayList<>();
+		mLayers = new HashMap<>();
 		
-		for(JsonValue v : tag.get("map").asArray())
+		for(String d : LAYERS)
 		{
-			Layer layer = new Layer();
-			
-			layer.load(v);
-			
-			aLayers.add(layer);
+			if(map.get(d) != null)
+			{
+				List<Layer> ls = new ArrayList<>();
+				
+				for(JsonValue v : map.get(d).asArray())
+				{
+					ls.add(loadLayer(v));
+				}
+				
+				mLayers.put(d, ls);
+			}
 		}
 		
-		mMeta = Utils.LoadStringMatrix(iWidth, iHeight, tag.get("meta"));
+		mMeta = loadLayer(tag.get("meta"));
 	}
 
 	@Override
 	public JsonValue save()
 	{
 		JsonObject tag = new JsonObject();
+		JsonObject map = new JsonObject();
 		
 		tag.add("tileset", sTileset);
 		tag.add("width", iWidth);
 		tag.add("height", iHeight);
-		tag.add("meta", Utils.SaveStringMatrix(iWidth, iHeight, mMeta));
+		
+		for(Entry<String, List<Layer>> e : mLayers.entrySet())
+		{
+			JsonArray layer = new JsonArray();
+			
+			for(Layer l : e.getValue())
+			{
+				layer.add(l.save());
+			}
+			
+			map.add(e.getKey(), layer);
+		}
+		
+		tag.add("map", map);
+		tag.add("meta", mMeta.save());
 		
 		return tag;
 	}
 	
-	public class Layer implements JsonModel
+	private Layer loadLayer(JsonValue v)
 	{
-		private String sOrder;
-		private String[][] mTiles;
+		Layer l = new Layer(iWidth, iHeight);
 		
-		public String getTile(int x, int y) { return mTiles[x][y]; }
-		public void setTile(int x, int y, String t) { mTiles[x][y] = t; }
+		l.load(v);
 		
-		@Override
-		public void load(JsonValue value)
-		{
-			JsonObject tag = value.asObject();
-
-			sOrder = tag.getString("order", null);
-			mTiles = Utils.LoadStringMatrix(iWidth, iHeight, tag.get("layer"));
-		}
-
-		@Override
-		public JsonValue save()
-		{
-			JsonObject tag = new JsonObject();
-			
-			tag.add("order", sOrder);
-			tag.add("map", Utils.SaveStringMatrix(iWidth, iHeight, mTiles));
-			
-			return tag;
-		}
+		return l;
 	}
+	
+	public static final String[] LAYERS = new String[] { "background", "bottom", "top" };
 }

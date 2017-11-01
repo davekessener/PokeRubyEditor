@@ -17,6 +17,8 @@ public class MetaField extends HBox
 	{
 		mColorView = new Rectangle(16, 16);
 		mIDView = new Label(id);
+		mID = id;
+		mColor = c;
 		
 		mColorView.setFill(c);
 		

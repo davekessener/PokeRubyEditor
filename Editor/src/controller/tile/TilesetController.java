@@ -2,8 +2,6 @@ package controller.tile;
 
 import java.util.ArrayList;
 
-import com.eclipsesource.json.JsonValue;
-
 import controller.ContentController;
 import controller.EditorController;
 import controller.ModalDialog;
@@ -23,7 +21,7 @@ import view.tile.CreateTileUI;
 import view.tile.ObservableTile;
 import view.tile.Tileset;
 
-public class TilesetController implements ContentController
+public class TilesetController extends ContentController
 {
 	private BorderPane mRoot;
 	private model.Tileset mTilesetModel;
@@ -32,15 +30,15 @@ public class TilesetController implements ContentController
 	private int mSelected;
 	private ObservableList<ObservableTile> mTiles;
 	private TileEditController mTileEditor;
-	private Property<Boolean> mCanRemoveTile, mChanged;
+	private Property<Boolean> mCanRemoveTile;
 	
 	public TilesetController(model.Tileset ts)
 	{
+		super(ts);
 		mRoot = new BorderPane();
 		mTilesetModel = ts;
 		mSource = EditorController.Instance.getLoader().loadMedia("tileset", ts.getSource());
 		mCanRemoveTile = new SimpleBooleanProperty();
-		mChanged = new SimpleBooleanProperty(false);
 
 		mTiles = new ObservableList<>(new ArrayList<>());
 		
@@ -64,27 +62,13 @@ public class TilesetController implements ContentController
 		return mRoot;
 	}
 
-	@Override
-	public Property<Boolean> needsSave()
-	{
-		return mChanged;
-	}
-
-	@Override
-	public JsonValue save()
-	{
-		mChanged.setValue(false);
-		
-		return mTilesetModel.save();
-	}
-
 	private void select(int s)
 	{
 		mSelected = s;
 		mTileset.setSelected(new Vec2(0, mSelected));
 		mCanRemoveTile.setValue(mTilesetModel.getTileCount() <= 1);
 		mTileEditor = mTiles.get(s).createEditor();
-		mTileEditor.changed().addListener((ob, o, n) -> { if(n) mChanged.setValue(n); });
+		mTileEditor.changed().addListener((ob, o, n) -> { if(n) change(); });
 		mRoot.setCenter(mTileEditor.getUI());
 	}
 	
@@ -100,7 +84,7 @@ public class TilesetController implements ContentController
 			mTilesetModel.addTile(ui.getID(), ui.getType().equals("animated") ? new AnimatedTile() : new StaticTile());
 			mTiles.add(new ObservableTile(mSource, mTilesetModel.getSize(), mTilesetModel.getTile(mTilesetModel.getTileCount() - 1)));
 			select(mTilesetModel.getTileCount() - 1);
-			mChanged.setValue(true);
+			change();
 		}
 	}
 	
@@ -111,7 +95,7 @@ public class TilesetController implements ContentController
 			mTilesetModel.deleteTile(mSelected);
 			mTiles.remove(mSelected);
 			select(0);
-			mChanged.setValue(true);
+			change();
 		}
 	}
 	

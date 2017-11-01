@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import controller.EditorController;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import model.Vec2;
 import view.RenderUtils;
 import view.TiledCanvas;
 
-public class Tileset extends TiledCanvas
+public class TilesetUI extends TiledCanvas
 {
 	private Image mSource;
 	private List<String> mTileIDs;
@@ -19,7 +20,15 @@ public class Tileset extends TiledCanvas
 	private int mWidth;
 	private Callback mCallback;
 	
-	public Tileset(Image src, int ts, Map<String, Vec2> tiles, int w)
+	public TilesetUI(TilesetRenderer r, int w)
+	{
+		this(r.getSource(), r.getTileSize(), r.getTiles(), w);
+		
+
+		drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
+	}
+	
+	public TilesetUI(Image src, int ts, Map<String, Vec2> tiles, int w)
 	{
 		super(w, (tiles.size() + w - 1) / w, ts);
 		mSource = src;
@@ -35,14 +44,24 @@ public class Tileset extends TiledCanvas
 		}
 		
 		this.setOnTileActivated((b, x, y) -> {
-			int i = x + y * mWidth;
-			if(mCallback != null && i < mTileIDs.size())
+			String s = getID(x + y * mWidth);
+			
+			setSelected(new Vec2(x, y));
+
+			if(mCallback != null && s != null)
 			{
-				mCallback.onSelect(mTileIDs.get(i));
+				mCallback.onSelect(s);
 			}
 		});
 	}
 	
+	public void setSelected(String id)
+	{
+		int i = mTileIDs.indexOf(id);
+		super.setSelected(new Vec2(i % mWidth, i / mWidth));
+	}
+	
+	public String getID(int i) { return i < mTileIDs.size() ? mTileIDs.get(i) : null; }
 	public void setOnSelect(Callback cb) { mCallback = cb; }
 	
 	@Override

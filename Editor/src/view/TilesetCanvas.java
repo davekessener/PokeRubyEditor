@@ -1,30 +1,35 @@
 package view;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
+import lib.tilemap.LayerManager;
+import model.ILayer;
 
-public class TilemapCanvas extends TiledCanvas
+public class TilesetCanvas extends TiledCanvas
 {
 	private final TileRenderer mTileRenderer;
-	private List<String[][]> mMap;
-	private boolean mDrawOverlay, mDrawUpper;
+	private LayerManager mMap;
+	private Property<Boolean> mDrawOverlay, mDrawUpper;
 	private int mCurrentLayer;
 	private LeftClickHandler mOnLeftClick;
 	private RightClickHandler mOnRightClick;
 	
-	public TilemapCanvas(int w, int h, int ts, TileRenderer r)
+	public TilesetCanvas(LayerManager mm, int ts, TileRenderer r)
 	{
-		super(w, h, ts);
+		super(mm.getWidth(), mm.getHeight(), ts);
 		mTileRenderer = r;
-		mMap = new ArrayList<>();
-		mDrawOverlay = false;
-		mDrawUpper = true;
-		mCurrentLayer = 0;
+		mMap = mm;
+		mDrawOverlay = new SimpleBooleanProperty(false);
+		mDrawUpper = new SimpleBooleanProperty(true);
+		mCurrentLayer = -1;
 		
+		mDrawOverlay.addListener((ob, o, n) -> redraw());
+		mDrawUpper.addListener((ob, o, n) -> redraw());
+		mMap.addObserver(o -> redraw());
+
 		this.setOnTileActivated((b, x, y) -> {
 			if(b.equals(MouseButton.PRIMARY))
 			{
@@ -35,9 +40,9 @@ public class TilemapCanvas extends TiledCanvas
 			}
 			else if(b.equals(MouseButton.SECONDARY))
 			{
-				if(mOnRightClick != null)
+				if(mOnRightClick != null && mCurrentLayer >= 0)
 				{
-					String s = mMap.get(mCurrentLayer)[x][y];
+					String s = mMap.getLayer(mCurrentLayer).get(x, y);
 					
 					if(s != null)
 					{
@@ -48,11 +53,11 @@ public class TilemapCanvas extends TiledCanvas
 		});
 	}
 	
-	public void addLayer(String[][] l)
-	{
-		mMap.add(l);
-		mCurrentLayer = mMap.size() - 1;
-	}
+	public Property<Boolean> drawOverlayProperty() { return mDrawOverlay; }
+	public Property<Boolean> drawUpperProperty() { return mDrawUpper; }
+	
+	public void redraw() { draw(); }
+	public void setActiveLayer(int i) { mCurrentLayer = i; redraw(); }
 	
 	public void setOnLeftClick(LeftClickHandler lcb) { mOnLeftClick = lcb; }
 	public void setOnRightClick(RightClickHandler rcb) { mOnRightClick = rcb; }
@@ -64,20 +69,21 @@ public class TilemapCanvas extends TiledCanvas
 		
 		for(int z = 0 ; z < mMap.size() ; ++z)
 		{
-			String[][] l = mMap.get(z);
+			ILayer l = mMap.getLayer(z);
+			String t = l.get(x, y);
 			
-			if(mDrawOverlay && z == mCurrentLayer)
+			if(mDrawOverlay.getValue() && z == mCurrentLayer)
 			{
-				gc.setFill(Color.rgb(255, 255, 255, 0.5));
-				gc.fillRect(x * s + 0.5, y * s + 0.5, s + 0.5, s + 0.5);
+				gc.setFill(Color.rgb(255, 255, 255, 0.75));
+				gc.fillRect(x * s, y * s, s, s);
 			}
 			
-			if(l[x][y] != null)
+			if(t != null)
 			{
-				mTileRenderer.drawTile(gc, l[x][y], x, y);
+				mTileRenderer.drawTile(gc, t, x, y);
 			}
 			
-			if(!mDrawUpper && z == mCurrentLayer)
+			if(!mDrawUpper.getValue() && z == mCurrentLayer)
 			{
 				break;
 			}

@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonValue;
@@ -13,10 +16,14 @@ import javafx.scene.image.Image;
 public class Loader
 {
 	private String mRoot;
+	private final java.util.Map<String, Image> mImages;
+	private final List<File> mJSON;
 	
 	public Loader(File root)
 	{
 		mRoot = root.getAbsolutePath();
+		mImages = new HashMap<>();
+		mJSON = new ArrayList<>();
 	}
 	
 	public File getFile(String ... ps)
@@ -35,15 +42,20 @@ public class Loader
 	
 	public JsonValue loadData(String type, String id)
 	{
+		String fn = mRoot + "/data/" + type + "/" + id + ".json";
+		
 		try
 		{
-			String fn = mRoot + "/data/" + type + "/" + id + ".json";
-			
 			File f = new File(fn + ".bak");
 			
-			if(f.exists()) f.delete();
-			
-			Files.copy((new File(fn)).toPath(), f.toPath());
+			if(!mJSON.contains(f))
+			{
+				if(f.exists()) f.delete();
+				
+				Files.copy((new File(fn)).toPath(), f.toPath());
+				
+				mJSON.add(f);
+			}
 			
 			return Json.parse(new FileReader(fn));
 		}
@@ -55,6 +67,14 @@ public class Loader
 	
 	public Image loadMedia(String type, String fn)
 	{
-		return new Image("file:" + mRoot + "/media/" + type + "/" + fn);
+		String path = "file:" + mRoot + "/media/" + type + "/" + fn;
+		Image r = mImages.get(path);
+		
+		if(r == null)
+		{
+			mImages.put(path, r = new Image(path));
+		}
+		
+		return r;
 	}
 }

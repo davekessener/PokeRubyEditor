@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import lib.Options;
 import model.Loader;
 import view.EditorUI;
 
@@ -18,19 +19,24 @@ public class EditorController
 	private EditorUI mUI;
 	private ProjectController mProject;
 	private Loader mLoader;
+	private Options mOptions;
 	
 	private EditorController()
 	{
 	}
 	
 	public Loader getLoader() { return mLoader; }
+	public Options getOptions() { return mOptions; }
 	
 	public void run(Stage primary)
 	{
 		mPrimary = primary;
 		mUI = new EditorUI();
 		mScene = new Scene(mUI.getNode(), 800, 600);
-		
+		mOptions = new Options();
+
+		mOptions.register(mUI);
+
 		mPrimary.setTitle("PokeRuby Editor");
 		mPrimary.setOnCloseRequest(e -> close(e));
 		

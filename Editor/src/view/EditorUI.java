@@ -4,13 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javafx.beans.property.Property;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
+import lib.MenuManager;
 
 public class EditorUI implements UI, MenuManager
 {
@@ -19,16 +22,22 @@ public class EditorUI implements UI, MenuManager
 	
 	private Map<String, MenuItem> menuItems;
 	private Map<String, Runnable> handlers;
+	private Map<String, Menu> menus;
 	
 	public EditorUI()
 	{
 		root = new BorderPane();
 		menu = new MenuBar();
 		menuItems = new HashMap<>();
+		menus = new HashMap<>();
 		
 		Menu fileMenu = createFileMenu();
+		Menu optionsMenu = createOptionsMenu();
 		
-		menu.getMenus().addAll(fileMenu);
+		menu.getMenus().addAll(fileMenu, optionsMenu);
+		
+		menus.put("file", fileMenu);
+		menus.put("options", optionsMenu);
 		
 		root.setTop(menu);
 
@@ -68,6 +77,13 @@ public class EditorUI implements UI, MenuManager
 		return m;
 	}
 	
+	private Menu createOptionsMenu()
+	{
+		Menu m = new Menu("Options");
+		
+		return m;
+	}
+	
 	private MenuItem createMenuItem(String id, String content)
 	{
 		MenuItem item = new MenuItem(content);
@@ -90,5 +106,16 @@ public class EditorUI implements UI, MenuManager
 			});
 			m.setDisable(true);
 		}
+	}
+
+	@Override
+	public void registerOption(String menuID, String optName, Property<Boolean> op)
+	{
+		CheckMenuItem m = new CheckMenuItem(optName);
+		
+		m.selectedProperty().setValue(op.getValue());
+		op.bind(m.selectedProperty());
+
+		menus.get(menuID).getItems().add(m);
 	}
 }

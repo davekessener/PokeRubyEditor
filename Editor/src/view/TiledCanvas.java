@@ -1,5 +1,7 @@
 package view;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
@@ -13,7 +15,8 @@ public abstract class TiledCanvas extends Canvas
 	private int mWidth, mHeight;
 	private Vec2 mSelected;
 	private TileActivatedHandler mCallback;
-	private boolean mDrawGrid;
+	private boolean mTrueClear;
+	private Property<Boolean> mDrawGrid;
 	
 	public TiledCanvas(int w, int h, int s)
 	{
@@ -23,8 +26,11 @@ public abstract class TiledCanvas extends Canvas
 		mHeight = h;
 		mSelected = null;
 		mCallback = null;
-		mDrawGrid = false;
-
+		mDrawGrid = new SimpleBooleanProperty(false);
+		mTrueClear = false;
+		
+		mDrawGrid.addListener((ob, o, n) -> draw());
+		
 		this.setOnMousePressed(e -> handle(e));
 		this.setOnMouseDragged(e -> handle(e));
 	}
@@ -32,27 +38,37 @@ public abstract class TiledCanvas extends Canvas
 	protected int getTileSize() { return mTileSize; }
 	public void setSelected(Vec2 s) { mSelected = s; draw(); }
 	public Vec2 getSelected() { return mSelected; }
-	public void setDrawGrid(boolean v) { mDrawGrid = v; }
+	public void setDrawGrid(boolean v) { mDrawGrid.setValue(v); }
+	public void setTrueClear(boolean v) { mTrueClear = v; }
 	
 	public void setOnTileActivated(TileActivatedHandler h) { mCallback = h; }
+	
+	public Property<Boolean> drawGridProperty() { return mDrawGrid; }
 	
 	public void draw()
 	{
 		GraphicsContext gc = this.getGraphicsContext2D();
 		
-		gc.setFill(Color.BLACK);
-		gc.fillRect(0, 0, this.getWidth(), this.getHeight());
+		if(mTrueClear)
+		{
+			gc.clearRect(0, 0, this.getWidth(), this.getHeight());
+		}
+		else
+		{
+			gc.setFill(Color.BLACK);
+			gc.fillRect(0, 0, this.getWidth(), this.getHeight());
+		}
 
 		drawTiles(gc);
 		
-		if(mDrawGrid)
+		if(mDrawGrid.getValue())
 		{
 			drawGrid(gc);
 		}
 		
 		if(mSelected != null)
 		{
-			RenderUtils.RenderBox(gc, mSelected, mTileSize, mDrawGrid);
+			RenderUtils.RenderBox(gc, mSelected, mTileSize, mDrawGrid.getValue());
 		}
 	}
 	
