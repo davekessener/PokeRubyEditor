@@ -8,19 +8,48 @@ import com.eclipsesource.json.JsonValue;
 
 public class Map implements JsonModel
 {
-	private String sID;
+	private String sName;
 	private String sTilemap;
 	private String sBorder;
-	private final Neighbors mNeighbors = new Neighbors();
+	private final java.util.Map<Direction, Neighbor> mNeighbors = new HashMap<>();
+	private JsonValue mEntities;
+	
+	public String getName() { return sName; }
+	public void setName(String name) { sName = name; }
+	public String getTilemapID() { return sTilemap; }
+	public void setTilemapID(String id) { sTilemap = id; }
+	public String getBorderID() { return sBorder; }
+	public void setBorderID(String id) { sBorder = id; }
+	public java.util.Map<Direction, Neighbor> getNeighbors() { return mNeighbors; }
 	
 	@Override
 	public void load(JsonValue value)
 	{
 		JsonObject tag = value.asObject();
-		sID = tag.getString("id", null);
+		JsonValue vneighbors = tag.get("neighbors");
+		
+		sName = tag.getString("name", null);
 		sTilemap = tag.getString("map", null);
 		sBorder = tag.getString("border", null);
-		mNeighbors.load(tag.get("neighbors"));
+		
+		if(vneighbors != null)
+		{
+			JsonObject ns = vneighbors.asObject();
+			
+			for(Direction d : Direction.values())
+			{
+				JsonValue v = ns.get(d.literal);
+				
+				if(v != null)
+				{
+					Neighbor n = new Neighbor();
+					n.load(v);
+					mNeighbors.put(d, n);
+				}
+			}
+		}
+		
+		mEntities = tag.get("entities");
 	}
 
 	@Override
@@ -28,42 +57,48 @@ public class Map implements JsonModel
 	{
 		JsonObject tag = new JsonObject();
 		
-		tag.add("id", sID);
+		tag.add("name", sName);
 		tag.add("map", sTilemap);
 		tag.add("border", sBorder);
-		tag.add("neighbors", mNeighbors.save());
+		
+		if(!mNeighbors.isEmpty())
+		{
+			JsonObject ns = new JsonObject();
+			
+			for(Entry<Direction, Neighbor> e : mNeighbors.entrySet())
+			{
+				ns.add(e.getKey().literal, e.getValue().save());
+			}
+			
+			tag.add("neighbors", ns);
+		}
+		
+		if(mEntities != null)
+		{
+			tag.add("entities", mEntities);
+		}
 		
 		return tag;
 	}
 	
-	public static class Neighbors implements JsonModel
+	public static class Neighbor implements JsonModel
 	{
-		private final java.util.Map<Direction, String> map_ = new HashMap<>();
+		private String mMapID;
+		private int mOffset;
 		
-		public void setNeighbor(Direction d, String id)
-		{
-			map_.put(d, id);
-		}
+		public Neighbor() { this(null, -1); }
+		public Neighbor(String id, int o) { mMapID = id; mOffset = o; }
 		
-		public String getNeighbor(Direction d)
-		{
-			return map_.get(d);
-		}
+		public String getMapID() { return mMapID; }
+		public int getOffset() { return mOffset; }
 
 		@Override
 		public void load(JsonValue value)
 		{
-			map_.clear();
+			JsonObject tag = value.asObject();
 			
-			for(Direction d : Direction.values())
-			{
-				JsonValue v = value.asObject().get(d.literal);
-				
-				if(v != null)
-				{
-					setNeighbor(d, v.asString());
-				}
-			}
+			mMapID = tag.getString("id", null);
+			mOffset = tag.getInt("offset", 0);
 		}
 
 		@Override
@@ -71,10 +106,8 @@ public class Map implements JsonModel
 		{
 			JsonObject tag = new JsonObject();
 			
-			for(Entry<Direction, String> e : map_.entrySet())
-			{
-				tag.add(e.getKey().literal, e.getValue());
-			}
+			tag.add("id", mMapID);
+			tag.add("offset", mOffset);
 			
 			return tag;
 		}

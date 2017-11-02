@@ -14,20 +14,30 @@ public class Tilemap implements JsonModel
 	private String sTileset;
 	private int iWidth;
 	private int iHeight;
-	private java.util.Map<String, List<Layer>> mLayers;
+	private final java.util.Map<String, List<Layer>> mLayers = new HashMap<>();
 	private Layer mMeta;
 	
 	public String getTilesetID() { return sTileset; }
 	public int getWidth() { return iWidth; }
 	public int getHeight() { return iHeight; }
+	public Layer getMeta() { return mMeta; }
 
 	public void setTilesetID(String id) { sTileset = id; }
 	public void setWidth(int w) { iWidth = w; }
 	public void setHeight(int h) { iHeight = h; }
+	public void setMeta(Layer l) { mMeta = l; }
 	
-	public Layer getMeta() { return mMeta; }
-	
-	public List<Layer> getLayers(String id) { List<Layer> l = mLayers.get(id); return l == null ? new ArrayList<>() : l; }
+	public List<Layer> getLayers(String id)
+	{
+		List<Layer> l = mLayers.get(id);
+		
+		if(l == null)
+		{
+			mLayers.put(id, l = new ArrayList<>());
+		}
+		
+		return l;
+	}
 	
 	public void resize(int w, int h)
 	{
@@ -39,6 +49,19 @@ public class Tilemap implements JsonModel
 			for(Layer l : ls)
 			{
 				l.resize(w, h);
+			}
+		}
+		
+		mMeta.resize(w, h);
+		
+		for(int y = 0 ; y < h ; ++y)
+		{
+			for(int x = 0 ; x < w ; ++x)
+			{
+				if(mMeta.get(x, y) == null)
+				{
+					mMeta.set(x, y, "wall");
+				}
 			}
 		}
 	}
@@ -53,7 +76,7 @@ public class Tilemap implements JsonModel
 		iWidth = tag.getInt("width", 0);
 		iHeight = tag.getInt("height", 0);
 		
-		mLayers = new HashMap<>();
+		mLayers.clear();
 		
 		for(String d : LAYERS)
 		{
@@ -92,7 +115,10 @@ public class Tilemap implements JsonModel
 				layer.add(l.save());
 			}
 			
-			map.add(e.getKey(), layer);
+			if(!e.getValue().isEmpty())
+			{
+				map.add(e.getKey(), layer);
+			}
 		}
 		
 		tag.add("map", map);
@@ -110,5 +136,5 @@ public class Tilemap implements JsonModel
 		return l;
 	}
 	
-	public static final String[] LAYERS = new String[] { "background", "bottom", "top" };
+	public static final String[] LAYERS = new String[] { "bottom", "top" };
 }

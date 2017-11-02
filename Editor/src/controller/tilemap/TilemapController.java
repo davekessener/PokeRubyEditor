@@ -3,21 +3,21 @@ package controller.tilemap;
 import controller.ContentController;
 import controller.EditorController;
 import javafx.scene.Node;
-import lib.EnterableTextField;
+import lib.IDValidator;
 import lib.tilemap.MapLayerManager;
 import model.Loader;
 import model.Tilemap;
 import model.Tileset;
+import view.TabbedUI;
 import view.TilesetCanvas;
 import view.tilemap.TabData;
 import view.tilemap.TabMap;
 import view.tilemap.TabMeta;
-import view.tilemap.TilemapUI;
 import view.tilemap.TilesetRenderer;
 
 public class TilemapController extends ContentController
 {
-	private TilemapUI mUI;
+	private TabbedUI mUI;
 	private Tilemap mTilemap;
 	private Tileset mTileset;
 	private MapLayerManager mLayers;
@@ -29,6 +29,7 @@ public class TilemapController extends ContentController
 	public TilemapController(Tilemap tm)
 	{
 		super(tm);
+		mUI = new TabbedUI();
 		mTilemap = tm;
 		mTileset = loadTileset(mTilemap.getTilesetID());
 		mLayers = new MapLayerManager(mTilemap);
@@ -41,10 +42,10 @@ public class TilemapController extends ContentController
 		mLayers.addObserver(o -> change());
 		mTabMap.setOnClick((x, y, lid, i, tile) -> setTile(lid, i, x, y, tile));
 		mTabMeta.setOnChange((x, y, id) -> setMeta(x, y, id));
-		mTabData.addTilesetValidation(new TilesetNameValidator());
+		mTabData.addTilesetValidation(new IDValidator("tileset"));
 		mTabData.setOnDimensionChange((w, h) -> resize(w, h));
 		
-		mUI = new TilemapUI(mTabMap.getNode(), mTabMeta.getNode(), mTabData.getNode());
+		mUI.addTab("Tilemap", mTabMap).addTab("Meta", mTabMeta).addTab("Data", mTabData);
 	}
 	
 	private void setTile(String lid, int idx, int x, int y, String tile)
@@ -62,6 +63,7 @@ public class TilemapController extends ContentController
 	private void resize(int w, int h)
 	{
 		mLayers.resize(w, h);
+		mTabMeta.refreshMap(mTilemap.getMeta());
 		change();
 	}
 	
@@ -88,20 +90,5 @@ public class TilemapController extends ContentController
 		
 		mTabMap.redraw();
 		mTabMeta.redraw();
-	}
-	
-	private class TilesetNameValidator extends EnterableTextField.Validator
-	{
-		@Override
-		public String message()
-		{
-			return "Not an existing tileset!";
-		}
-
-		@Override
-		public boolean isValid(String v)
-		{
-			return EditorController.Instance.getLoader().getFile("data", "tileset", v + ".json").exists();
-		}
 	}
 }

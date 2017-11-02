@@ -1,10 +1,7 @@
 package controller;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import com.eclipsesource.json.WriterConfig;
+import java.util.HashMap;
 
 import controller.map.MapController;
 import controller.tile.TilesetController;
@@ -16,14 +13,17 @@ import javafx.scene.control.Alert.AlertType;
 import lib.MenuManager;
 import model.Loader;
 import model.Map;
-import model.Project;
 import model.Tilemap;
 import model.Tileset;
 import view.ProjectUI;
+import view.create.NewMapUI;
+import view.create.NewTilemapUI;
+import view.create.NewTilesetUI;
+import view.create.NewUI;
 
 public class ProjectController implements Controller
 {
-	private Project mProject;
+	private File mProject;
 	private ProjectUI mUI;
 	private MenuManager mMenu;
 	private ContentController mContent;
@@ -31,14 +31,20 @@ public class ProjectController implements Controller
 	
 	public ProjectController(File dir, MenuManager menu)
 	{
-		mProject = new Project(dir.getAbsolutePath() + "/data");
-		mUI = new ProjectUI((type, id) -> editItem(type, id));
+		mProject = dir;
+		mUI = new ProjectUI(dir.getName(), (type, id) -> editItem(type, id));
 		mMenu = menu;
 		mOpenFile = null;
-
-		mUI.updateTree(dir.getName(), mProject.content);
 		
+		updateProjectTree();
+
 		mMenu.setHandler("file:close", () -> tryClose());
+		mMenu.setRange("project:new", type -> createNew(type), CREATOR_UI.keySet());
+	}
+	
+	private void updateProjectTree()
+	{
+		mUI.updateTree(mProject);
 	}
 	
 	@Override
@@ -58,6 +64,30 @@ public class ProjectController implements Controller
 		mMenu.setHandler("file:close", null);
 		
 		return true;
+	}
+	
+	private void createNew(String type)
+	{
+		try
+		{
+			NewUI ui = CREATOR_UI.get(type).newInstance();
+			ModalDialog dialog = new ModalDialog("Create new " + type, ui);
+			
+			dialog.showAndWait();
+			
+			if(dialog.isSuccessful())
+			{
+				Loader l = EditorController.Instance.getLoader();
+				
+				l.write(l.getFile("data", type, ui.getID() + ".json"), ui.getData());
+				
+				updateProjectTree();
+			}
+		}
+		catch (InstantiationException | IllegalAccessException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private boolean closeResource()
@@ -98,7 +128,7 @@ public class ProjectController implements Controller
 		{
 			Map map = new Map();
 			map.load(l.loadData(type, id));
-			mContent = new MapController(map);
+			mContent = new MapController(id, map);
 		}
 
 		mUI.setContent(mContent.getUI());
@@ -134,15 +164,15 @@ public class ProjectController implements Controller
 	
 	private void save()
 	{
-		try
-		{
-			FileWriter fw = new FileWriter(mOpenFile);
-			mContent.save().writeTo(fw, WriterConfig.PRETTY_PRINT);
-			fw.close();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
+		EditorController.Instance.getLoader().write(mOpenFile, mContent.save());
+	}
+	
+	private static final java.util.Map<String, Class<? extends NewUI>> CREATOR_UI = new HashMap<>();
+	
+	static
+	{
+		CREATOR_UI.put("map", NewMapUI.class);
+		CREATOR_UI.put("tilemap", NewTilemapUI.class);
+		CREATOR_UI.put("tileset", NewTilesetUI.class);
 	}
 }

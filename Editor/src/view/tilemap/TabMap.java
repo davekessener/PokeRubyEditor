@@ -78,6 +78,7 @@ public class TabMap implements UI
 		
 		mLayerType.getItems().addAll(Tilemap.LAYERS);
 		mLayerType.valueProperty().addListener((ob, o, n) -> selectLayer(n, mLayerIndex));
+		mLayerType.getSelectionModel().select("bottom");
 		mLayer.valueProperty().addListener((ob, o, n) -> selectLayer(mSelectedLayer, mLayer.getSelectionModel().getSelectedIndex()));
 		mCanvas.setOnRightClick(id -> { mTileset.setSelected(id); selectTile(id); });
 		mCanvas.setOnLeftClick((x, y) -> clickTile(x, y));
@@ -106,16 +107,19 @@ public class TabMap implements UI
 	
 	private void addLayer(int i)
 	{
-		mManager.addLayer(mSelectedLayer, i);
-		reloadLayerBox();
-		mLayer.getSelectionModel().select(i);
+		if(mSelectedLayer != null)
+		{
+			i = mManager.addLayer(mSelectedLayer, i);
+			reloadLayerBox();
+			mLayer.getSelectionModel().select(i);
+		}
 	}
 	
 	private void deleteLayer(int i)
 	{
-		mManager.deleteLayer(mSelectedLayer, i);
+		i = mManager.deleteLayer(mSelectedLayer, i);
 		reloadLayerBox();
-		mLayer.getSelectionModel().select(i - 1);
+		mLayer.getSelectionModel().select(i);
 	}
 	
 	public void redraw()

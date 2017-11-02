@@ -1,7 +1,9 @@
 package lib;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
@@ -81,7 +83,65 @@ public class EnterableTextField extends TextField
 		public String message() { return null; }
 	}
 	
-	public static Validator IS_POSITIVE_INT = new Validator() {
+	public static class EmptyAcceptor extends Validator
+	{
+		private Validator mChild;
+		
+		public EmptyAcceptor(Validator child)
+		{
+			mChild = child;
+		}
+		
+		@Override
+		public boolean isValid(String v)
+		{
+			return v.equals("") || (mChild == null || mChild.isValid(v));
+		}
+		
+		@Override
+		public String message()
+		{
+			return mChild.message();
+		}
+	}
+	
+	public static class FileValidator extends Validator
+	{
+		private FileGenerator mGenerator;
+		
+		public FileValidator(FileGenerator gen)
+		{
+			mGenerator = gen;
+		}
+		
+		@Override
+		public boolean isValid(String s)
+		{
+			File f = mGenerator.generate(s);
+			
+			return f != null && f.exists();
+		}
+		
+		@Override
+		public String message()
+		{
+			return "Must be a valid file!";
+		}
+		
+		public static interface FileGenerator { public abstract File generate(String content); }
+	}
+	
+	public static class IntValidator extends Validator
+	{
+		private Predicate<Integer> mCheck;
+		private String mDesc;
+		
+		public IntValidator(String desc, Predicate<Integer> check)
+		{
+			mDesc = desc;
+			mCheck = check;
+		}
+		
 		@Override
 		public boolean isValid(String s)
 		{
@@ -96,15 +156,17 @@ public class EnterableTextField extends TextField
 				return false;
 			}
 			
-			return i > 0;
+			return mCheck == null ? true : mCheck.test(i);
 		}
-		
-		@Override
+
 		public String message()
 		{
-			return "Must be a positive integer!";
+			return "Must be a " + mDesc + " integer!";
 		}
-	};
+	}
+	
+	public static Validator IS_INT = new IntValidator("", i -> true);
+	public static Validator IS_POSITIVE_INT = new IntValidator("positive", i -> i > 0);
 	
 	public static Validator IS_NOT_EMPTY = new Validator() {
 		@Override public boolean isValid(String s) { return !s.isEmpty(); }

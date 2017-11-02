@@ -13,6 +13,17 @@ public class Layer implements JsonModel, ILayer
 		resize(w, h);
 	}
 	
+	public void fill(String v)
+	{
+		for(int y = 0 ; y < mHeight ; ++y)
+		{
+			for(int x = 0 ; x < mWidth ; ++x)
+			{
+				mData[x][y] = v;
+			}
+		}
+	}
+	
 	public void resize(int w, int h)
 	{
 		String[][] d = new String[w][h];

@@ -30,12 +30,15 @@ public class TilesetUI extends TiledCanvas
 	
 	public TilesetUI(Image src, int ts, Map<String, Vec2> tiles, int w)
 	{
-		super(w, (tiles.size() + w - 1) / w, ts);
+		super(w, (tiles.size() + w) / w, ts);
 		mSource = src;
 		mWidth = w;
 		
 		mTileIDs = new ArrayList<>();
 		mTilePos = new ArrayList<>();
+		
+		mTileIDs.add(null);
+		mTilePos.add(null);
 		
 		for(Entry<String, Vec2> e : tiles.entrySet())
 		{
@@ -48,7 +51,7 @@ public class TilesetUI extends TiledCanvas
 			
 			setSelected(new Vec2(x, y));
 
-			if(mCallback != null && s != null)
+			if(mCallback != null)
 			{
 				mCallback.onSelect(s);
 			}
@@ -69,7 +72,7 @@ public class TilesetUI extends TiledCanvas
 	{
 		int i = x + y * mWidth;
 		
-		if(i < mTilePos.size())
+		if(i > 0 && i < mTilePos.size())
 		{
 			RenderUtils.RenderTile(gc, mSource, getTileSize(), mTilePos.get(i), new Vec2(x, y));
 		}

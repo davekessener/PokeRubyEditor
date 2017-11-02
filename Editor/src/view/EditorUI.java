@@ -3,6 +3,7 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javafx.beans.property.Property;
 import javafx.scene.Node;
@@ -32,9 +33,10 @@ public class EditorUI implements UI, MenuManager
 		menus = new HashMap<>();
 		
 		Menu fileMenu = createFileMenu();
+		Menu projectMenu = createProjectMenu();
 		Menu optionsMenu = createOptionsMenu();
 		
-		menu.getMenus().addAll(fileMenu, optionsMenu);
+		menu.getMenus().addAll(fileMenu, projectMenu, optionsMenu);
 		
 		menus.put("file", fileMenu);
 		menus.put("options", optionsMenu);
@@ -77,9 +79,29 @@ public class EditorUI implements UI, MenuManager
 		return m;
 	}
 	
+	private Menu createProjectMenu()
+	{
+		Menu m = new Menu("Project");
+		
+		m.getItems().addAll(
+			createMenu("project:new", "New")
+		);
+		
+		return m;
+	}
+	
 	private Menu createOptionsMenu()
 	{
 		Menu m = new Menu("Options");
+		
+		return m;
+	}
+	
+	private Menu createMenu(String id, String content)
+	{
+		Menu m = new Menu(content);
+		
+		menuItems.put(id, m);
 		
 		return m;
 	}
@@ -117,5 +139,29 @@ public class EditorUI implements UI, MenuManager
 		op.bind(m.selectedProperty());
 
 		menus.get(menuID).getItems().add(m);
+	}
+
+	@Override
+	public void setRange(String id, Consumer<String> c, Set<String> opts)
+	{
+		Menu m = (Menu) menuItems.get(id);
+
+		m.getItems().clear();
+		
+		if(c == null)
+		{
+			m.setDisable(true);
+		}
+		else
+		{
+			m.setDisable(false);
+			
+			for(String s : opts)
+			{
+				MenuItem i = new MenuItem(s);
+				i.setOnAction(e -> c.consume(s));
+				m.getItems().add(i);
+			}
+		}
 	}
 }

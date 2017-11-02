@@ -1,7 +1,9 @@
 package model;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.List;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonValue;
+import com.eclipsesource.json.WriterConfig;
 
 import javafx.scene.image.Image;
 
@@ -38,6 +41,20 @@ public class Loader
 		}
 		
 		return new File(sb.toString());
+	}
+	
+	public void write(File f, JsonValue v)
+	{
+		try
+		{
+			BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+			v.writeTo(bw, WriterConfig.PRETTY_PRINT);
+			bw.close();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public JsonValue loadData(String type, String id)

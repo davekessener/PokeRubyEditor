@@ -1,7 +1,7 @@
 package view.tilemap;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import controller.EditorController;
@@ -25,7 +25,7 @@ public class TilesetRenderer implements TileRenderer
 		
 		mSource = l.loadMedia("tileset", ts.getSource());
 		mTileSize = ts.getSize();
-		mTiles = new HashMap<>();
+		mTiles = new LinkedHashMap<>();
 		
 		for(int i = 0 ; i < ts.getTileCount() ; ++i)
 		{

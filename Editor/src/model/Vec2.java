@@ -18,6 +18,8 @@ public class Vec2 implements JsonModel
 	
 	public void setX(int dx) { this.dx = dx; }
 	public void setY(int dy) { this.dy = dy; }
+	
+	public Vec2 add(Vec2 p) { return new Vec2(dx + p.dx, dy + p.dy); }
 
 	@Override
 	public void load(JsonValue value)
@@ -30,6 +32,12 @@ public class Vec2 implements JsonModel
 	public JsonValue save()
 	{
 		return new JsonArray().add(dx).add(dy);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "(" + dx + ", " + dy + ")";
 	}
 	
 	@Override

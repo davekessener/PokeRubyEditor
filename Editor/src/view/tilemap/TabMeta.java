@@ -111,16 +111,27 @@ public class TabMeta implements UI
 		redraw();
 	}
 	
+	public void refreshMap(ILayer metas)
+	{
+		mMetaLayer = new StaticLayerManager(metas.getWidth(), metas.getHeight());
+		mMetamap.setManager(mMetaLayer);
+		mMetaLayer.addLayer(metas);
+	}
+	
 	public void redraw()
 	{
 		mTilemap.draw();
 		mMetamap.draw();
 	}
 	
-	private void addMeta(String id)
+	private void addMeta(String meta)
 	{
-		mMetas.addMeta(id);
+		mMetas.addMeta(meta);
+		mMetaList.getItems().add(new MetaField(meta, mMetas.getColor(meta)));
+		mMetaList.getSelectionModel().select(mMetaList.getItems().size() - 1);
 		mNewMetaInput.setText("");
+		
+		redraw();
 	}
 	
 	public Color getColorOfMeta(String id) { return mMetas.getColor(id); }
@@ -136,11 +147,7 @@ public class TabMeta implements UI
 			}
 		}
 		
-		mMetas.addMeta(meta);
-		mMetaList.getItems().add(new MetaField(meta, mMetas.getColor(meta)));
-		mMetaList.getSelectionModel().select(mMetaList.getItems().size() - 1);
-		
-		redraw();
+		addMeta(meta);
 	}
 	
 	private void writeMeta(int x, int y, String id)

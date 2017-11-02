@@ -45,6 +45,18 @@ public abstract class TiledCanvas extends Canvas
 	
 	public Property<Boolean> drawGridProperty() { return mDrawGrid; }
 	
+	public void setWidth(int w)
+	{
+		mWidth = w;
+		super.setWidth(mWidth * mTileSize);
+	}
+	
+	public void setHeight(int h)
+	{
+		mHeight = h;
+		super.setHeight(mHeight * mTileSize);
+	}
+	
 	public void draw()
 	{
 		GraphicsContext gc = this.getGraphicsContext2D();
@@ -95,7 +107,10 @@ public abstract class TiledCanvas extends Canvas
 		int x = (int) (e.getX() / mTileSize);
 		int y = (int) (e.getY() / mTileSize);
 
-		onTileActivated(e.getButton(), x, y);
+		if(x >= 0 && y >= 0 && x < mWidth && y < mHeight)
+		{
+			onTileActivated(e.getButton(), x, y);
+		}
 	}
 	
 	protected void onTileActivated(MouseButton b, int x, int y)

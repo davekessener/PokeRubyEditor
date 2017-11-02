@@ -53,28 +53,34 @@ public class MapLayerManager extends LayerManager
 		change();
 	}
 	
-	public void addLayer(String lid, int i)
+	public int addLayer(String lid, int i)
 	{
 		List<Layer> ls = mMap.getLayers(lid);
 		
-		if(i >= ls.size()) i = ls.size() - 1;
+		if(i > ls.size()) i = ls.isEmpty() ? 0 : ls.size() - 1;
 		
 		ls.add(i, new Layer(mMap.getWidth(), mMap.getHeight()));
 		++nSize;
 		
 		change();
+		
+		return i;
 	}
 	
-	public void deleteLayer(String lid, int i)
+	public int deleteLayer(String lid, int i)
 	{
 		List<Layer> ls = mMap.getLayers(lid);
 		
-		if(i >= ls.size()) i = ls.size() - 1;
+		if(ls.isEmpty()) return -1;
+		
+		if(i > ls.size()) i = ls.size() - 1;
 		
 		ls.remove(i);
 		--nSize;
 		
 		change();
+		
+		return i - 1;
 	}
 
 	@Override

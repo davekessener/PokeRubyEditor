@@ -47,8 +47,8 @@ public class AnimatedTileUI implements UI
 		mRoot.setTop(hbox);
 		mRoot.setCenter(spane);
 
-		mMaxFrames.prefHeightProperty().bind(hbox.heightProperty());
-		ms.prefHeightProperty().bind(hbox.heightProperty());
+		mMaxFrames.setAlignment(Pos.CENTER_RIGHT);
+		ms.setAlignment(Pos.CENTER_LEFT);
 		
 		mPeriod.addValidations(EnterableTextField.IS_POSITIVE_INT);
 		mPeriod.setAlignment(Pos.CENTER_RIGHT);
