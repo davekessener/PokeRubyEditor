@@ -1,7 +1,5 @@
-package controller.tilemap;
+package controller;
 
-import controller.ContentController;
-import controller.EditorController;
 import javafx.scene.Node;
 import lib.IDValidator;
 import lib.tilemap.MapLayerManager;

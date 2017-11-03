@@ -1,6 +1,5 @@
-package controller.map;
+package controller;
 
-import controller.ContentController;
 import javafx.scene.Node;
 import model.Direction;
 import model.Map;

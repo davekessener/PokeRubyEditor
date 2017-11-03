@@ -92,14 +92,20 @@ public class MapLayerManager extends LayerManager
 	@Override
 	public ILayer getLayer(int i)
 	{
-		int k = 0;
-		
-		while(i > mMap.getLayers(Tilemap.LAYERS[k]).size() || mMap.getLayers(Tilemap.LAYERS[k]).size() == 0)
+		for(String s : Tilemap.LAYERS)
 		{
-			i -= mMap.getLayers(Tilemap.LAYERS[k]).size();
-			++k;
+			List<Layer> ls = mMap.getLayers(s);
+			
+			if(i >= ls.size())
+			{
+				i -= ls.size();
+			}
+			else
+			{
+				return ls.get(i);
+			}
 		}
 		
-		return mMap.getLayers(Tilemap.LAYERS[k]).get(i);
+		throw new RuntimeException("Couldn't find layer!");
 	}
 }

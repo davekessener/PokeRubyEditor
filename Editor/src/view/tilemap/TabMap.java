@@ -169,6 +169,7 @@ public class TabMap implements UI
 		if(!mLayer.getItems().isEmpty())
 		{
 			mLayer.getSelectionModel().select(0);
+			mLayerIndex = 0;
 		}
 		
 		mMaxLayerLabel.setText("/ " + mLayer.getItems().size());

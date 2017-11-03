@@ -7,7 +7,6 @@ import view.TiledCanvas;
 public class Tileset extends TiledCanvas
 {
 	private ObservableList<ObservableTile> mTiles;
-	private int mTileSize;
 	
 	public Tileset(ObservableList<ObservableTile> tiles, int ts)
 	{
@@ -15,7 +14,6 @@ public class Tileset extends TiledCanvas
 		
 		mTiles = tiles;
 		mTiles.addObserver(o -> redraw());
-		mTileSize = ts;
 		
 		for(ObservableTile t : tiles)
 		{
@@ -25,7 +23,7 @@ public class Tileset extends TiledCanvas
 	
 	private void redraw()
 	{
-		this.setHeight(mTiles.size() * mTileSize);
+		this.setHeight(mTiles.size());
 		
 		for(ObservableTile t : mTiles)
 		{
