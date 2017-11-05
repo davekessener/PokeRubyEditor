@@ -1,17 +1,20 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import lib.ObservableMap;
+
 public class Tileset implements JsonModel
 {
 	private int iSize;
 	private String sSource;
-	private final List<Tile> aTiles = new ArrayList<>();
+	private final ObservableMap<String, Tile> mTiles = new ObservableMap<>(new LinkedHashMap<>());
 	
 	public int getSize() { return iSize; }
 	public String getSource() { return sSource; }
@@ -19,12 +22,8 @@ public class Tileset implements JsonModel
 	public void setSize(int s) { iSize = s; }
 	public void setSource(String s) { sSource = s; }
 	
-	public int getTileCount() { return aTiles.size(); }
-	public Tile getTile(int i) { return aTiles.get(i); }
-	public Tile getTile(String id) { return aTiles.stream().filter(t -> t.getID().equals(id)).findFirst().get(); }
-	
-	public void addTile(String id, Tile t) { aTiles.add(t); t.setID(id); }
-	public void deleteTile(int i) { aTiles.remove(i); }
+	public ObservableMap<String, Tile> getTiles() { return mTiles; }
+	public void addTile(Tile t) { mTiles.put(t.getID(), t); }
 	
 	@Override
 	public void load(JsonValue value)
@@ -34,10 +33,10 @@ public class Tileset implements JsonModel
 		iSize = tag.getInt("size", 0);
 		sSource = tag.getString("source", null);
 		
-		aTiles.clear();
+		mTiles.clear();
 		for(JsonValue v : tag.get("tiles").asArray())
 		{
-			aTiles.add(loadTile(v.asObject()));
+			addTile(loadTile(v.asObject()));
 		}
 	}
 
@@ -50,7 +49,7 @@ public class Tileset implements JsonModel
 		tag.add("size", iSize);
 		tag.add("source", sSource);
 		
-		for(Tile t : aTiles)
+		for(Tile t : mTiles.values())
 		{
 			tiles.add(t.save());
 		}
@@ -77,6 +76,7 @@ public class Tileset implements JsonModel
 		public void setID(String id) { sID = id; }
 		
 		public abstract Vec2 getPosition();
+		public abstract Type getType();
 		
 		@Override
 		public void load(JsonValue value)
@@ -97,6 +97,12 @@ public class Tileset implements JsonModel
 	{
 		private Vec2 vPosition;
 		
+		public StaticTile(String id, Vec2 p)
+		{
+			setID(id);
+			setPosition(p);
+		}
+		
 		public StaticTile()
 		{
 			vPosition = new Vec2(0, 0);
@@ -106,6 +112,12 @@ public class Tileset implements JsonModel
 		public Vec2 getPosition()
 		{
 			return vPosition;
+		}
+		
+		@Override
+		public Type getType()
+		{
+			return Type.STATIC;
 		}
 		
 		public void setPosition(Vec2 p)
@@ -133,8 +145,10 @@ public class Tileset implements JsonModel
 		private int iPeriod;
 		private final List<Vec2> aFrames;
 		
-		public AnimatedTile()
+		public AnimatedTile() { this(null); }
+		public AnimatedTile(String id)
 		{
+			setID(id);
 			aFrames = new ArrayList<>();
 			aFrames.add(new Vec2(0, 0));
 			iPeriod = 1;
@@ -142,17 +156,19 @@ public class Tileset implements JsonModel
 
 		public int getPeriod() { return iPeriod; }
 		public void setPeriod(int ms) { iPeriod = ms; }
-		
-		public int getFrameCount() { return aFrames.size(); }
-		public Vec2 getFrame(int i) { return aFrames.get(i); }
-		public void setFrame(int i, Vec2 v) { aFrames.set(i, v); }
-		public void addFrame(int i, Vec2 v) { aFrames.add(i, v); }
-		public void removeFrame(int i) { aFrames.remove(i); }
+
+		public List<Vec2> getFrames() { return aFrames; }
 		
 		@Override
 		public Vec2 getPosition()
 		{
 			return aFrames.get(0);
+		}
+		
+		@Override
+		public Type getType()
+		{
+			return Type.ANIMATED;
 		}
 		
 		@Override
@@ -189,6 +205,25 @@ public class Tileset implements JsonModel
 			tag.add("frames", frames);
 			
 			return tag;
+		}
+	}
+	
+	public static enum Type
+	{
+		STATIC("static"),
+		ANIMATED("animated");
+		
+		public final String id;
+		
+		private Type(String id)
+		{
+			this.id = id;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return id;
 		}
 	}
 }

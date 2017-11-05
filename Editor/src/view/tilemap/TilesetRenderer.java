@@ -27,9 +27,8 @@ public class TilesetRenderer implements TileRenderer
 		mTileSize = ts.getSize();
 		mTiles = new LinkedHashMap<>();
 		
-		for(int i = 0 ; i < ts.getTileCount() ; ++i)
+		for(Tile t : ts.getTiles().values())
 		{
-			Tile t = ts.getTile(i);
 			mTiles.put(t.getID(), t.getPosition());
 		}
 	}

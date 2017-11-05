@@ -7,6 +7,7 @@ import lib.EnterableTextField;
 import lib.EnterableTextField.FileValidator;
 import model.Tileset;
 import model.Tileset.StaticTile;
+import model.Vec2;
 
 public class NewTilesetUI extends BasicNewUI
 {
@@ -23,7 +24,7 @@ public class NewTilesetUI extends BasicNewUI
 		
 		ts.setSource(getField("source"));
 		ts.setSize(Integer.parseInt(getField("size")));
-		ts.addTile("default", new StaticTile());
+		ts.addTile(new StaticTile("0000", new Vec2(0, 0)));
 		
 		return ts.save();
 	}

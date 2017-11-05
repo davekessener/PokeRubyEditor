@@ -22,7 +22,7 @@ public class TabMap implements UI
 	private BorderPane mRoot;
 	private TilesetCanvas mCanvas;
 	private Tilemap mTilemap;
-	private TilesetUI mTileset;
+	private TilesetView mTileset;
 	private ComboBox<String> mLayerType;
 	private ComboBox<String> mLayer;
 	private Label mMaxLayerLabel;
@@ -38,7 +38,7 @@ public class TabMap implements UI
 		mRoot = new BorderPane();
 		mTilemap = map;
 		mCanvas = new TilesetCanvas(lm, ts, r);
-		mTileset = new TilesetUI(r, 8);
+		mTileset = new TilesetView(r, 8);
 		mManager = lm;
 		mSelectedLayer = null;
 		mLayerIndex = -1;

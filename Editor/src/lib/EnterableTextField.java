@@ -142,6 +142,12 @@ public class EnterableTextField extends TextField
 			mCheck = check;
 		}
 		
+		public IntValidator lessThan(int v) { return new IntValidator(mDesc + " and less than " + v, i -> mCheck.test(i) && i < v); }
+		public IntValidator greaterThan(int v) { return new IntValidator(mDesc + " and greater than " + v, i -> mCheck.test(i) && i > v); }
+		
+		public IntValidator lessThan(Producer<Integer> p) { return new IntValidator(mDesc + " and less than", i -> mCheck.test(i) && i < p.produce()); }
+		public IntValidator greaterThan(Producer<Integer> p) { return new IntValidator(mDesc + " and greater than", i -> mCheck.test(i) && i > p.produce()); }
+		
 		@Override
 		public boolean isValid(String s)
 		{
@@ -161,12 +167,14 @@ public class EnterableTextField extends TextField
 
 		public String message()
 		{
-			return "Must be a " + mDesc + " integer!";
+			return "Must be " + mDesc + " [Integer]!";
 		}
+		
+		public static interface Producer<T> { public abstract T produce(); }
 	}
 	
-	public static Validator IS_INT = new IntValidator("", i -> true);
-	public static Validator IS_POSITIVE_INT = new IntValidator("positive", i -> i > 0);
+	public static IntValidator IS_INT = new IntValidator("", i -> true);
+	public static IntValidator IS_POSITIVE_INT = new IntValidator("positive", i -> i > 0);
 	
 	public static Validator IS_NOT_EMPTY = new Validator() {
 		@Override public boolean isValid(String s) { return !s.isEmpty(); }

@@ -3,7 +3,6 @@ package controller;
 import java.io.File;
 import java.util.HashMap;
 
-import controller.tile.TilesetController;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert;

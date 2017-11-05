@@ -1,64 +1,43 @@
 package view.tile;
 
+import javafx.scene.Group;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import model.Tileset.Type;
 import model.Vec2;
-import view.UI;
-import view.TiledCanvas.TileActivatedHandler;
 
-public class StaticTileUI implements UI
+public class StaticTileUI extends BasicTileUI
 {
-	private BorderPane mRoot;
-	private TilesetUI mTileset;
-	private TextField mID;
+	private final Group mRoot;
+	private Vec2 mPos;
 	
-	public StaticTileUI(Image src, int ts, String id, Vec2 p)
+	public StaticTileUI(Vec2 p)
 	{
-		mRoot = new BorderPane();
-		mTileset = new TilesetUI(src, ts);
-		mID = new TextField(id);
-		
-		ScrollPane pane = new ScrollPane();
-		HBox hbox = new HBox();
-		
-		Label lbl = new Label(" ID: ");
-		hbox.getChildren().addAll(lbl, mID);
-		pane.setContent(mTileset);
-		mRoot.setTop(hbox);
-		mRoot.setCenter(pane);
-		lbl.prefHeightProperty().bind(mID.heightProperty());
+		mRoot = new Group();
+		mPos = p;
+	}
 
-		mID.setOnKeyPressed(e -> { if(e.getCode().equals(KeyCode.ENTER)) mTileset.requestFocus(); });
-		
-		select(p);
-	}
-	
-	public void select(Vec2 p)
+	@Override
+	protected void onSelect(Vec2 p)
 	{
-		mTileset.setSelected(p);
+		this.selectTile(p);
+		super.onSelect(p);
 	}
 	
-	public void setOnSelect(TileActivatedHandler h)
+	@Override
+	public void onBind()
 	{
-		mTileset.setOnTileActivated(h);
+		this.selectTile(mPos);
 	}
-	
-	public void setOnIDChange(StringChangeListener cb)
-	{
-		mID.focusedProperty().addListener((ob, o, n) -> { if(!n) cb.onChange(mID.getText()); });
-	}
-	
+
 	@Override
 	public Parent getNode()
 	{
 		return mRoot;
 	}
 	
-	public static interface StringChangeListener { public abstract void onChange(String id); }
+	@Override
+	public Type getType()
+	{
+		return Type.STATIC;
+	}
 }

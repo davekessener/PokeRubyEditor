@@ -5,13 +5,31 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleIntegerProperty;
+
 public class ObservableList<T> extends Observable implements List<T>
 {
 	private final List<T> mList;
+	private final Property<Number> mSizeProperty;
 	
 	public ObservableList(List<T> list)
 	{
 		mList = list;
+		mSizeProperty = new SimpleIntegerProperty(list.size());
+	}
+	
+	public Property<Number> sizeProperty()
+	{
+		return mSizeProperty;
+	}
+	
+	@Override
+	protected void change()
+	{
+		mSizeProperty.setValue(mList.size());
+		
+		super.change();
 	}
 	
 	@Override public boolean add(T e) { boolean v = mList.add(e); change(); return v; }

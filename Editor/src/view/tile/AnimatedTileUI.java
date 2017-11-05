@@ -1,92 +1,129 @@
 package view.tile;
 
-import javafx.geometry.Insets;
+import java.util.List;
+
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import lib.EnterableTextField;
+import lib.ObservableList;
+import model.Tileset.Type;
 import model.Vec2;
-import view.TiledCanvas;
-import view.UI;
 
-public class AnimatedTileUI implements UI
+import static javafx.beans.property.ReadOnlyIntegerProperty.readOnlyIntegerProperty;
+
+public class AnimatedTileUI extends BasicTileUI
 {
-	private BorderPane mRoot;
-	private TilesetUI mTilesetUI;
-	private Button mAddPrev, mAddNext, mDel;
-	private ComboBox<String> mFrame;
-	private Label mMaxFrames;
-	private EnterableTextField mPeriod;
-	
-	public AnimatedTileUI(Image source, int ts)
+	private final HBox mRoot;
+	private List<Vec2> mFrames;
+	private TextField mCurrentFrame;
+	private Callback<Integer> mOnAddFrame, mOnRemoveFrame;
+	private Callback<Integer> mOnPeriodChange;
+	private final Property<Number> mSelectedFrame;
+
+	public AnimatedTileUI(ObservableList<Vec2> frames, int period)
 	{
-		mRoot = new BorderPane();
-		mTilesetUI = new TilesetUI(source, ts);
-		mAddPrev = new Button("<");
-		mAddNext = new Button(">");
-		mDel = new Button("-");
-		mFrame = new ComboBox<>();
-		mMaxFrames = new Label("/ 0");
-		mPeriod = new EnterableTextField("0");
+		mRoot = new HBox();
+		mFrames = frames;
+		mSelectedFrame = new SimpleIntegerProperty();
+		
+		mRoot.setSpacing(3D);
+		
+		EnterableTextField tfFrame, tfPeriod;
+		tfFrame = new EnterableTextField("1");
+		tfPeriod = new EnterableTextField("" + period);
+		
+		tfFrame.addValidations(EnterableTextField.IS_POSITIVE_INT.lessThan(() -> mFrames.size() + 1));
+		tfPeriod.addValidations(EnterableTextField.IS_POSITIVE_INT);
+		
+		Label lblMax = new Label("/ " + mFrames.size());
+		Label lblMs = new Label("ms");
+		VBox vb = new VBox();
+		Button addPrev = new Button("V");
+		Button addNext = new Button("^");
+		Button deleteBtn = new Button("-");
+		Button btnPrev = new Button("<");
+		Button btnNext = new Button(">");
+		vb.getChildren().addAll(addNext, addPrev);
+		lblMax.setAlignment(Pos.CENTER_LEFT);
+		lblMs.setAlignment(Pos.CENTER_LEFT);
+		mRoot.getChildren().addAll(vb, btnPrev, tfFrame, lblMax, btnNext, deleteBtn, tfPeriod, lblMs);
 
-		Label ms = new Label("ms");
+		tfFrame.setCallback(s -> mSelectedFrame.setValue(Integer.parseInt(s) - 1));
 		
-		HBox hbox = new HBox();
-		hbox.setPadding(new Insets(3D, 3D, 3D, 3D));
-		hbox.getChildren().addAll(mDel, mFrame, mMaxFrames, mAddPrev, mAddNext, mPeriod, ms);
+		mCurrentFrame = tfFrame;
 		
-		ScrollPane spane = new ScrollPane();
-		spane.setContent(mTilesetUI);
-		
-		mRoot.setTop(hbox);
-		mRoot.setCenter(spane);
+		deleteBtn.disableProperty().bind(readOnlyIntegerProperty(frames.sizeProperty()).lessThan(2));
+		btnPrev.disableProperty().bind(readOnlyIntegerProperty(mSelectedFrame).isEqualTo(0));
+		btnNext.disableProperty().bind(readOnlyIntegerProperty(mSelectedFrame).isEqualTo(readOnlyIntegerProperty(frames.sizeProperty()).subtract(1)));
+		frames.addObserver(o -> lblMax.setText("/ " + frames.size()));
 
-		mMaxFrames.setAlignment(Pos.CENTER_RIGHT);
-		ms.setAlignment(Pos.CENTER_LEFT);
+		btnPrev.setOnAction(e -> setSelectedFrame(getSelectedFrame() - 1));
+		btnNext.setOnAction(e -> setSelectedFrame(getSelectedFrame() + 1));
 		
-		mPeriod.addValidations(EnterableTextField.IS_POSITIVE_INT);
-		mPeriod.setAlignment(Pos.CENTER_RIGHT);
+		addPrev.setOnAction(e -> addFrame(getSelectedFrame()));
+		addNext.setOnAction(e -> addFrame(getSelectedFrame() + 1));
+		deleteBtn.setOnAction(e -> removeFrame(getSelectedFrame()));
+		tfPeriod.setCallback(s -> changePeriod(Integer.parseInt(s)));
+		
+		mSelectedFrame.addListener(o -> this.selectTile(mFrames.get(getSelectedFrame())));
+		mSelectedFrame.addListener(o -> mCurrentFrame.setText("" + (mSelectedFrame.getValue().intValue() + 1)));
 	}
 	
-	public void setFrameCount(int m)
+	public int getSelectedFrame() { return (int) mSelectedFrame.getValue(); }
+	public void setSelectedFrame(int idx) { mSelectedFrame.setValue(idx); }
+	
+	public void setOnAddFrame(Callback<Integer> cb) { mOnAddFrame = cb; }
+	public void setOnRemoveFrame(Callback<Integer> cb) { mOnRemoveFrame = cb; }
+	public void setOnPeriodChange(Callback<Integer> cb) { mOnPeriodChange = cb; }
+	
+	private void addFrame(int idx)
 	{
-		mFrame.getItems().clear();
-		for(int i = 0 ; i < m ; ++i)
+		if(mOnAddFrame != null)
 		{
-			mFrame.getItems().add("Frame " + (i + 1));
+			mOnAddFrame.call(idx);
 		}
-		mMaxFrames.setText(" / " + m + " ");
 	}
 	
-	public void selectFrame(int i, Vec2 p)
+	private void removeFrame(int idx)
 	{
-		mFrame.getSelectionModel().select(i);
-		mTilesetUI.setSelected(p);
+		if(mOnRemoveFrame != null)
+		{
+			mOnRemoveFrame.call(idx);
+		}
 	}
 	
-	public int getSelectedFrame() { return mFrame.getSelectionModel().getSelectedIndex(); }
-	public void setDeleteEnable(boolean v) { mDel.setDisable(!v); }
-	public void setPeriod(int p) { mPeriod.setText("" + p); }
+	private void changePeriod(int p)
+	{
+		if(mOnPeriodChange != null)
+		{
+			mOnPeriodChange.call(p);
+		}
+	}
 	
-	public void setOnActionHandler(TiledCanvas.TileActivatedHandler h) { mTilesetUI.setOnTileActivated(h); }
-	public void setOnAddFramePrev(Runnable r) { mAddPrev.setOnAction(e -> r.run()); }
-	public void setOnAddFrameNext(Runnable r) { mAddNext.setOnAction(e -> r.run()); }
-	public void setOnDeleteFrame(Runnable r) { mDel.setOnAction(e -> r.run()); }
-	public void setOnSelectFrame(FrameSelect s) { mFrame.valueProperty().addListener((ob, o, n) -> s.select(mFrame.getSelectionModel().getSelectedIndex())); }
-	public void setOnPeriodChange(PeriodChange c) { mPeriod.setCallback(s -> c.change(Integer.parseInt(s))); }
+	@Override
+	protected void onBind()
+	{
+		this.selectTile(mFrames.get(getSelectedFrame()));
+	}
+
+	@Override
+	public Type getType()
+	{
+		return Type.ANIMATED;
+	}
 
 	@Override
 	public Parent getNode()
 	{
 		return mRoot;
 	}
-
-	public static interface FrameSelect { public abstract void select(int f); }
-	public static interface PeriodChange { public abstract void change(int f); }
+	
+	public static interface Callback<T> { public abstract void call(T v); }
 }
