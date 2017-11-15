@@ -43,7 +43,7 @@ public class Loader
 		return new File(sb.toString());
 	}
 	
-	public void write(File f, JsonValue v)
+	public void writeFile(File f, JsonValue v)
 	{
 		try
 		{
@@ -57,9 +57,14 @@ public class Loader
 		}
 	}
 	
+	public void writeData(String type, String id, JsonValue value)
+	{
+		writeFile(new File(generateFilename(type, id)), value);
+	}
+	
 	public JsonValue loadData(String type, String id)
 	{
-		String fn = mRoot + "/data/" + type + "/" + id + ".json";
+		String fn = generateFilename(type, id);
 		
 		try
 		{
@@ -93,5 +98,10 @@ public class Loader
 		}
 		
 		return r;
+	}
+
+	public String generateFilename(String type, String id)
+	{
+		return mRoot + "/data/" + type + "/" + id.replaceAll(":", "/") + ".json";
 	}
 }

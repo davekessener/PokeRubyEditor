@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import javafx.scene.Node;
@@ -8,6 +9,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import lib.MenuManager;
+import model.JsonModel;
 import model.Loader;
 import model.Map;
 import model.Tilemap;
@@ -36,7 +38,7 @@ public class ProjectController implements Controller
 		updateProjectTree();
 
 		mMenu.setHandler("file:close", () -> tryClose());
-		mMenu.setRange("project:new", type -> createNew(type), CREATOR_UI.keySet());
+		mMenu.setRange("project:new", type -> createNew(type), CREATORS.keySet());
 	}
 	
 	private void updateProjectTree()
@@ -65,25 +67,18 @@ public class ProjectController implements Controller
 	
 	private void createNew(String type)
 	{
-		try
-		{
-			NewUI ui = CREATOR_UI.get(type).newInstance();
-			ModalDialog dialog = new ModalDialog("Create new " + type, ui);
+		NewUI ui = CREATORS.get(type).instantiateUI();
+		ModalDialog dialog = new ModalDialog("Create new " + type, ui);
 			
-			dialog.showAndWait();
-			
-			if(dialog.isSuccessful())
-			{
-				Loader l = EditorController.Instance.getLoader();
-				
-				l.write(l.getFile("data", type, ui.getID() + ".json"), ui.getData());
-				
-				updateProjectTree();
-			}
-		}
-		catch (InstantiationException | IllegalAccessException e)
+		dialog.showAndWait();
+		
+		if(dialog.isSuccessful())
 		{
-			throw new RuntimeException(e);
+			Loader l = EditorController.Instance.getLoader();
+			
+			l.writeData(type, ui.getID(), ui.getData());
+			
+			updateProjectTree();
 		}
 	}
 	
@@ -106,31 +101,11 @@ public class ProjectController implements Controller
 	private void editItem(String type, String id)
 	{
 		if(!closeResource()) return;
-
-		Loader l = EditorController.Instance.getLoader();
-
-		if(type == "tileset")
-		{
-			Tileset ts = new Tileset();	
-			ts.load(l.loadData(type, id));
-			mContent = new TilesetController(ts);
-		}
-		else if(type == "tilemap")
-		{
-			Tilemap tm = new Tilemap();
-			tm.load(l.loadData(type, id));
-			mContent = new TilemapController(tm);
-		}
-		else if(type == "map")
-		{
-			Map map = new Map();
-			map.load(l.loadData(type, id));
-			mContent = new MapController(id, map);
-		}
-
+		
+		mContent = CREATORS.get(type).instantiateController(id);
 		mUI.setContent(mContent.getUI());
 		mContent.needsSave().addListener(v -> changeSaveState());
-		mOpenFile = l.getFile("data", type, id + ".json");
+		mOpenFile = new File(EditorController.Instance.getLoader().generateFilename(type, id));
 	}
 	
 	private void changeSaveState()
@@ -161,15 +136,73 @@ public class ProjectController implements Controller
 	
 	private void save()
 	{
-		EditorController.Instance.getLoader().write(mOpenFile, mContent.save());
+		EditorController.Instance.getLoader().writeFile(mOpenFile, mContent.save());
 	}
 	
-	private static final java.util.Map<String, Class<? extends NewUI>> CREATOR_UI = new HashMap<>();
+	private static final java.util.Map<String, Creator> CREATORS = new HashMap<>();
 	
 	static
 	{
-		CREATOR_UI.put("map", NewMapUI.class);
-		CREATOR_UI.put("tilemap", NewTilemapUI.class);
-		CREATOR_UI.put("tileset", NewTilesetUI.class);
+		new Creator("map", MapController.class, Map.class, NewMapUI.class);
+		new Creator("tilemap", TilemapController.class, Tilemap.class, NewTilemapUI.class);
+		new Creator("tileset", TilesetController.class, Tileset.class, NewTilesetUI.class);
+	}
+	
+	private static class Creator
+	{
+		private final String mType;
+		private final Class<? extends ContentController> mControllerClass;
+		private final Class<? extends JsonModel> mModelClass;
+		private final Class<? extends NewUI> mCreatorClass;
+		
+		public Creator(String type, Class<? extends ContentController> ccc, Class<? extends JsonModel> cjm, Class<? extends NewUI> cnui)
+		{
+			mType = type;
+			mControllerClass = ccc;
+			mModelClass = cjm;
+			mCreatorClass = cnui;
+			
+			CREATORS.put(mType, this);
+		}
+		
+		public ContentController instantiateController(String id)
+		{
+			Loader l = EditorController.Instance.getLoader();
+			JsonModel model = instantiateModel();
+			
+			model.load(l.loadData(mType, id));
+			
+			try
+			{
+				return mControllerClass.getConstructor(String.class, mModelClass).newInstance(id, model);
+			}
+			catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException 
+					| IllegalArgumentException | InvocationTargetException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public NewUI instantiateUI()
+		{
+			return Instantiate(mCreatorClass);
+		}
+		
+		public JsonModel instantiateModel()
+		{
+			return Instantiate(mModelClass);
+		}
+		
+		private static <T> T Instantiate(Class<? extends T> c)
+		{
+			try
+			{
+				return c.newInstance();
+			}
+			catch (InstantiationException | IllegalAccessException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 }

@@ -34,7 +34,7 @@ public class TabNeighbors implements UI
 	private final PreviewManager mPreviewManager;
 	private final Map<Direction, Neighbor> mNeighbors;
 	private final ScrollPane mPreviewContainer;
-	private int mTileSize;
+	private final int mTileSize;
 	private NeighborChangeHandler mCallback;
 	
 	public TabNeighbors(String id, PreviewManager m, Map<Direction, Neighbor> neighbors)

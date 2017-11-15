@@ -1,10 +1,13 @@
 package controller;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import view.DialogUI;
@@ -24,28 +27,28 @@ public class ModalDialog extends Stage
 		
 		Node ui = mUI.getNode();
 		
-		AnchorPane root = new AnchorPane();
+		GridPane root = new GridPane();
 		HBox hbox = new HBox();
 		Button okBtn = new Button("OK");
 		Button cancelBtn = new Button("Cancel");
 
-		okBtn.setPrefWidth(80D);
-		cancelBtn.setPrefWidth(80D);
+		okBtn.setPrefWidth(100D);
+		cancelBtn.setPrefWidth(100D);
 		
 		okBtn.setOnAction(e -> createAndClose());
 		cancelBtn.setOnAction(e -> close());
 		
 		hbox.getChildren().addAll(okBtn, cancelBtn);
+		hbox.setAlignment(Pos.BASELINE_RIGHT);
 		hbox.setSpacing(5D);
 		
-		root.getChildren().addAll(hbox, ui);
-		AnchorPane.setRightAnchor(hbox, 5D);
-		AnchorPane.setBottomAnchor(hbox, 5D);
-		AnchorPane.setTopAnchor(ui, 5D);
-		AnchorPane.setLeftAnchor(ui, 5D);
-		AnchorPane.setRightAnchor(ui, 5D);
+		root.addColumn(0, ui, hbox);
+		root.setPadding(new Insets(5D, 5D, 5D, 5D));
+		root.setVgap(7D);
+		GridPane.setHgrow(ui, Priority.ALWAYS);
+		GridPane.setVgrow(ui, Priority.ALWAYS);
 		
-		this.setScene(new Scene(root, Math.max(250, ui.prefWidth(100)), Math.max(100, ui.prefHeight(250) + hbox.getHeight() + 5)));
+		this.setScene(new Scene(root));
 	}
 	
 	public boolean isSuccessful() { return mCreated; }

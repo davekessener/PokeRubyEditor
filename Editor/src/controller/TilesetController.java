@@ -15,7 +15,7 @@ public class TilesetController extends ContentController
 	private Tileset mTileset;
 	private Image mSource;
 	
-	public TilesetController(Tileset ts)
+	public TilesetController(String tid, Tileset ts)
 	{
 		super(ts);
 		

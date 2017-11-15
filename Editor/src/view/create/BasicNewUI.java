@@ -105,7 +105,7 @@ public abstract class BasicNewUI implements NewUI
 		@Override
 		public boolean isValid(String v)
 		{
-			return v.matches("[a-z][a-z0-9_]*");
+			return v.matches("[a-z][a-z0-9:_]*");
 		}
 		
 		@Override

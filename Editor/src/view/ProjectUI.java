@@ -1,17 +1,20 @@
 package view;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Deque;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
+import javafx.util.Pair;
 
 public class ProjectUI implements UI
 {
@@ -29,13 +32,11 @@ public class ProjectUI implements UI
 		tree.setOnMouseClicked(e -> {
 			if(cb != null && e.getClickCount() == 2)
 			{
-				TreeItem<String> selected = tree.getSelectionModel().getSelectedItem();
+				Pair<String, String> selected = processSelected(tree.getSelectionModel().getSelectedItem());
 				
-				// TODO custom cell factory
-				if(selected != null && selected.getParent() != null
-						&& Arrays.stream(VALID_TYPES).anyMatch(s -> s.equals(selected.getParent().getValue())))
+				if(selected != null)
 				{
-					cb.handle(selected.getParent().getValue(), selected.getValue());
+					cb.handle(selected.getKey(), selected.getValue());
 				}
 			}
 		});
@@ -59,53 +60,88 @@ public class ProjectUI implements UI
 	{
 		mRoot.setCenter(content);
 	}
-	
-	public void updateTree(File dir)
-	{
-		Map<String, List<String>> t = generateTree(dir.getAbsolutePath() + "/data");
-		
-		for(TreeItem<String> branch : mTreeRoot.getChildren())
-		{
-			List<String> content = t.get(branch.getValue());
-			
-			if(content != null) for(String s : content)
-			{
-				if(!branch.getChildren().stream().anyMatch(i -> i.getValue().equals(s)))
-				{
-					branch.getChildren().add(new TreeItem<>(s));
-				}
-			}
-		}
-	}
-	
+
 	@Override
 	public Parent getNode()
 	{
 		return mRoot;
 	}
-
-	private static Map<String, List<String>> generateTree(String dir)
+	
+	public void updateTree(File root)
 	{
-		Map<String, List<String>> content = new HashMap<>();
-		
-		for(String type : VALID_TYPES)
+		for(TreeItem<String> type : mTreeRoot.getChildren())
 		{
-			content.put(type, readIDs(dir + File.separator + type));
+			populateBranch(new File(root.getAbsolutePath() + "/data/" + type.getValue()), type);
 		}
-		
-		return content;
 	}
 	
-	private static List<String> readIDs(String path)
+	private void populateBranch(File path, TreeItem<String> branch)
 	{
-		List<String> r = new ArrayList<>();
+		if(path == null || !path.exists() || !path.isDirectory() || !path.canWrite())
+			return;
 		
-		for(File f : (new File(path)).listFiles((dir, fn) -> fn.toLowerCase().endsWith(".json")))
+		ObservableList<TreeItem<String>> children = branch.getChildren();
+		
+		Map<String, File> dirs = Arrays.stream(path.listFiles()).filter(f -> f.isDirectory()).collect(Collectors.toMap(e -> e.getName(), e -> e));
+		
+		children.removeIf(e -> !e.getChildren().isEmpty() && !dirs.values().stream().anyMatch(f -> f.getName().equals(e.getValue())));
+		
+		for(TreeItem<String> b : children)
 		{
-			r.add(f.getName().replaceAll("\\.json$", ""));
+			populateBranch(dirs.get(b.getValue()), b);
+			dirs.remove(b.getValue());
 		}
 		
-		return r;
+		for(File f : dirs.values())
+		{
+			TreeItem<String> b = new TreeItem<>(f.getName());
+			
+			populateBranch(f, b);
+
+			if(!b.getChildren().isEmpty())
+			{
+				children.add(b);
+			}
+		}
+		
+		for(File f : path.listFiles())
+		{
+			if(f.isFile() && f.canWrite() && f.getAbsolutePath().endsWith(".json"))
+			{
+				String id = f.getName().replaceAll("\\.json$", "");
+				
+				if(!children.stream().anyMatch(c -> id.equals(c.getValue())))
+				{
+					branch.getChildren().add(new TreeItem<>(id));
+				}
+			}
+		}
+	}
+	
+	private Pair<String, String> processSelected(TreeItem<String> selected)
+	{
+		if(selected == null) return null;
+		if(selected.getParent() == null) return null;
+		if(!selected.getChildren().isEmpty()) return null;
+		
+		Deque<String> path = new ArrayDeque<>();
+		
+		TreeItem<String> t = selected;
+		while(t.getParent().getParent() != null)
+		{
+			path.addFirst(t.getValue());
+			t = t.getParent();
+		}
+		
+		if(t == selected) return null;
+		
+		final String type = t.getValue();
+		final String id = String.join("/", path);
+		
+		if(!Arrays.stream(VALID_TYPES).anyMatch(s -> s.equals(type))) return null;
+		if(id == null || id.isEmpty()) return null;
+		
+		return new Pair<String, String>(type, id);
 	}
 	
 	private static final String[] VALID_TYPES = new String[] {"map", "tilemap", "tileset"};

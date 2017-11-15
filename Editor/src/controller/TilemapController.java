@@ -24,7 +24,7 @@ public class TilemapController extends ContentController
 	private TabMeta mTabMeta;
 	private TabData mTabData;
 	
-	public TilemapController(Tilemap tm)
+	public TilemapController(String tid, Tilemap tm)
 	{
 		super(tm);
 		mUI = new TabbedUI();
