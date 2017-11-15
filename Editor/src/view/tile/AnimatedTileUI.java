@@ -53,6 +53,7 @@ public class AnimatedTileUI extends BasicTileUI
 		vb.getChildren().addAll(addNext, addPrev);
 		lblMax.setAlignment(Pos.CENTER_LEFT);
 		lblMs.setAlignment(Pos.CENTER_LEFT);
+		mRoot.setAlignment(Pos.CENTER);
 		mRoot.getChildren().addAll(vb, btnPrev, tfFrame, lblMax, btnNext, deleteBtn, tfPeriod, lblMs);
 
 		tfFrame.setCallback(s -> mSelectedFrame.setValue(Integer.parseInt(s) - 1));

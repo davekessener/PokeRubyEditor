@@ -1,5 +1,6 @@
 package view.tile;
 
+import controller.EditorController;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -35,6 +36,7 @@ public class TilesetUI implements UI
 		GridPane.setHgrow(addBtn, Priority.ALWAYS);
 		GridPane.setVgrow(sp, Priority.ALWAYS);
 		mRoot.setRight(gp);
+		mTilesetSource.drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
 		
 		mRoot.setOnKeyPressed(e -> {
 			if(e.getCode().equals(KeyCode.TAB))

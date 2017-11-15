@@ -2,6 +2,7 @@ package view;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,13 @@ public class ProjectUI implements UI
 			if(cb != null && e.getClickCount() == 2)
 			{
 				TreeItem<String> selected = tree.getSelectionModel().getSelectedItem();
-				cb.handle(selected.getParent().getValue(), selected.getValue());
+				
+				// TODO custom cell factory
+				if(selected != null && selected.getParent() != null
+						&& Arrays.stream(VALID_TYPES).anyMatch(s -> s.equals(selected.getParent().getValue())))
+				{
+					cb.handle(selected.getParent().getValue(), selected.getValue());
+				}
 			}
 		});
 

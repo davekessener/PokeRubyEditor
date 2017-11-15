@@ -85,6 +85,7 @@ public class TabMap implements UI
 		mCanvas.drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
 		mCanvas.drawOverlayProperty().bind(greyOut.selectedProperty());
 		mCanvas.drawUpperProperty().bind(renderTop.selectedProperty());
+		EditorController.Instance.getMenuManager().setStatus(mCanvas.mousedOverTileProperty());
 		
 		mSelectedTile = mTileset.getID(0);
 		mTileset.setSelected(new Vec2(0, 0));

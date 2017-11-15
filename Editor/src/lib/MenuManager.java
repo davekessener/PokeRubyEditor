@@ -9,6 +9,8 @@ public interface MenuManager
 	public abstract void setHandler(String id, Runnable callback);
 	public abstract void registerOption(String menuID, String optName, Property<Boolean> op);
 	public abstract void setRange(String id, Consumer<String> c, Set<String> opts);
+	public abstract void setStatus(String v);
+	public abstract void setStatus(Property<String> s);
 	
 	public static interface Consumer<T> { public abstract void consume(T e); }
 }

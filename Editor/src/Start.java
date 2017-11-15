@@ -8,7 +8,7 @@ public class Start extends Application
 	{
 		launch(args);
 	}
-
+	
 	@Override
 	public void start(Stage stage) throws Exception
 	{

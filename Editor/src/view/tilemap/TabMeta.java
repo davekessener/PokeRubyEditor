@@ -66,6 +66,7 @@ public class TabMeta implements UI
 			gc.fillRect(x * ts, y * ts, ts, ts);
 		});
 		mMetamap.drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
+		mTilemap.drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
 		mMetamap.setTrueClear(true);
 		mMetamap.setActiveLayer(0);
 		mMetaLayer.addLayer(metas);

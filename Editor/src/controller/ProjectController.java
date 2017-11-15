@@ -26,11 +26,11 @@ public class ProjectController implements Controller
 	private ContentController mContent;
 	private File mOpenFile;
 	
-	public ProjectController(File dir, MenuManager menu)
+	public ProjectController(File dir)
 	{
 		mProject = dir;
 		mUI = new ProjectUI(dir.getName(), (type, id) -> editItem(type, id));
-		mMenu = menu;
+		mMenu = EditorController.Instance.getMenuManager();
 		mOpenFile = null;
 		
 		updateProjectTree();

@@ -6,20 +6,24 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javafx.beans.property.Property;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import lib.MenuManager;
 
 public class EditorUI implements UI, MenuManager
 {
 	private BorderPane root;
 	private MenuBar menu;
+	private Label status;
 	
 	private Map<String, MenuItem> menuItems;
 	private Map<String, Runnable> handlers;
@@ -36,12 +40,15 @@ public class EditorUI implements UI, MenuManager
 		Menu projectMenu = createProjectMenu();
 		Menu optionsMenu = createOptionsMenu();
 		
+		HBox statusBar = createStatusBar();
+		
 		menu.getMenus().addAll(fileMenu, projectMenu, optionsMenu);
 		
 		menus.put("file", fileMenu);
 		menus.put("options", optionsMenu);
 		
 		root.setTop(menu);
+		root.setBottom(statusBar);
 
 		initializeHandlers();
 	}
@@ -49,6 +56,18 @@ public class EditorUI implements UI, MenuManager
 	public void setContent(Node node)
 	{
 		root.setCenter(node);
+	}
+	
+	@Override
+	public void setStatus(String s)
+	{
+		status.setText(s);
+	}
+	
+	@Override
+	public void setStatus(Property<String> s)
+	{
+		status.textProperty().bind(s);
 	}
 	
 	@Override
@@ -62,6 +81,16 @@ public class EditorUI implements UI, MenuManager
 	public Parent getNode()
 	{
 		return root;
+	}
+	
+	private HBox createStatusBar()
+	{
+		HBox hb = new HBox();
+		
+		hb.setPadding(new Insets(0D, 5D, 0D, 0D));
+		hb.getChildren().add(status = new Label(""));
+		
+		return hb;
 	}
 	
 	private Menu createFileMenu()

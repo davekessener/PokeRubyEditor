@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import lib.MenuManager;
 import lib.Options;
 import model.Loader;
 import view.EditorUI;
@@ -27,6 +28,7 @@ public class EditorController
 	
 	public Loader getLoader() { return mLoader; }
 	public Options getOptions() { return mOptions; }
+	public MenuManager getMenuManager() { return mUI; }
 	
 	public void run(Stage primary)
 	{
@@ -49,7 +51,7 @@ public class EditorController
 	public void open(File dir)
 	{
 		tryCloseCurrentProject();
-		mProject = new ProjectController(dir, mUI);
+		mProject = new ProjectController(dir);
 		mLoader = new Loader(dir);
 		mUI.setContent(mProject.getUI());
 	}

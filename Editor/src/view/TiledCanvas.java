@@ -2,6 +2,7 @@ package view;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
@@ -17,6 +18,7 @@ public abstract class TiledCanvas extends Canvas
 	private TileActivatedHandler mCallback;
 	private boolean mTrueClear;
 	private Property<Boolean> mDrawGrid;
+	private Property<String> mMouseOverTile;
 	
 	public TiledCanvas(int w, int h, int s)
 	{
@@ -27,12 +29,14 @@ public abstract class TiledCanvas extends Canvas
 		mSelected = null;
 		mCallback = null;
 		mDrawGrid = new SimpleBooleanProperty(false);
+		mMouseOverTile = new SimpleStringProperty("");
 		mTrueClear = false;
 		
 		mDrawGrid.addListener((ob, o, n) -> draw());
 		
-		this.setOnMousePressed(e -> handle(e));
-		this.setOnMouseDragged(e -> handle(e));
+		this.setOnMousePressed(e -> mouseClick(e));
+		this.setOnMouseDragged(e -> mouseClick(e));
+		this.setOnMouseMoved(e -> mouseOver(e));
 	}
 	
 	protected int getTileSize() { return mTileSize; }
@@ -44,6 +48,7 @@ public abstract class TiledCanvas extends Canvas
 	public void setOnTileActivated(TileActivatedHandler h) { mCallback = h; }
 	
 	public Property<Boolean> drawGridProperty() { return mDrawGrid; }
+	public Property<String> mousedOverTileProperty() { return mMouseOverTile; }
 	
 	public void setWidth(int w)
 	{
@@ -102,15 +107,35 @@ public abstract class TiledCanvas extends Canvas
 		gc.strokeLine(0.5, mHeight * mTileSize - 0.5, mWidth * mTileSize - 0.5, mHeight * mTileSize - 0.5);
 	}
 	
-	protected void handle(MouseEvent e)
+	protected void mouseClick(MouseEvent e)
+	{
+		Vec2 p = translate(e);
+		
+		if(p != null)
+		{
+			onTileActivated(e.getButton(), p.getX(), p.getY());
+		}
+	}
+	
+	protected void mouseOver(MouseEvent e)
+	{
+		Vec2 p = translate(e);
+		
+		mMouseOverTile.setValue(p == null ? "" : ("X: " + p.getX() + ", Y: " + p.getY()));
+	}
+	
+	protected Vec2 translate(MouseEvent e)
 	{
 		int x = (int) (e.getX() / mTileSize);
 		int y = (int) (e.getY() / mTileSize);
+		Vec2 r = null;
 
 		if(x >= 0 && y >= 0 && x < mWidth && y < mHeight)
 		{
-			onTileActivated(e.getButton(), x, y);
+			r = new Vec2(x, y);
 		}
+		
+		return r;
 	}
 	
 	protected void onTileActivated(MouseButton b, int x, int y)
