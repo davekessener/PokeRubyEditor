@@ -1,5 +1,7 @@
 package lib;
 
+import java.io.File;
+
 import controller.EditorController;
 
 public class IDValidator extends EnterableTextField.FileValidator
@@ -8,7 +10,7 @@ public class IDValidator extends EnterableTextField.FileValidator
 	
 	public IDValidator(String type)
 	{
-		super(s -> EditorController.Instance.getLoader().getFile("data", type, s + ".json"));
+		super(s -> new File(EditorController.Instance.getLoader().generateFilename(type, s)));
 		mType = type;
 	}
 	

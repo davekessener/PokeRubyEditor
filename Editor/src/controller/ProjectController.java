@@ -1,7 +1,6 @@
 package controller;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import javafx.scene.Node;
@@ -22,9 +21,9 @@ import view.create.NewUI;
 
 public class ProjectController implements Controller
 {
-	private File mProject;
-	private ProjectUI mUI;
-	private MenuManager mMenu;
+	private final File mProject;
+	private final ProjectUI mUI;
+	private final MenuManager mMenu;
 	private ContentController mContent;
 	private File mOpenFile;
 	
@@ -33,12 +32,11 @@ public class ProjectController implements Controller
 		mProject = dir;
 		mUI = new ProjectUI(dir.getName(), (type, id) -> editItem(type, id));
 		mMenu = EditorController.Instance.getMenuManager();
-		mOpenFile = null;
 		
 		updateProjectTree();
 
 		mMenu.setHandler("file:close", () -> tryClose());
-		mMenu.setRange("project:new", type -> createNew(type), CREATORS.keySet());
+		mMenu.setRange("edit:new", type -> createNew(type), CREATORS.keySet());
 	}
 	
 	private void updateProjectTree()
@@ -102,10 +100,13 @@ public class ProjectController implements Controller
 	{
 		if(!closeResource()) return;
 		
+		EditorController e = EditorController.Instance;
+		
+		e.getActionManager().clear();
 		mContent = CREATORS.get(type).instantiateController(id);
 		mUI.setContent(mContent.getUI());
 		mContent.needsSave().addListener(v -> changeSaveState());
-		mOpenFile = new File(EditorController.Instance.getLoader().generateFilename(type, id));
+		mOpenFile = new File(e.getLoader().generateFilename(type, id));
 	}
 	
 	private void changeSaveState()
@@ -164,6 +165,16 @@ public class ProjectController implements Controller
 			
 			CREATORS.put(mType, this);
 		}
+
+		public NewUI instantiateUI()
+		{
+			return Instantiate(mCreatorClass);
+		}
+		
+		public JsonModel instantiateModel()
+		{
+			return Instantiate(mModelClass);
+		}
 		
 		public ContentController instantiateController(String id)
 		{
@@ -176,21 +187,10 @@ public class ProjectController implements Controller
 			{
 				return mControllerClass.getConstructor(String.class, mModelClass).newInstance(id, model);
 			}
-			catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException 
-					| IllegalArgumentException | InvocationTargetException e)
+			catch(Exception e)
 			{
 				throw new RuntimeException(e);
 			}
-		}
-		
-		public NewUI instantiateUI()
-		{
-			return Instantiate(mCreatorClass);
-		}
-		
-		public JsonModel instantiateModel()
-		{
-			return Instantiate(mModelClass);
 		}
 		
 		private static <T> T Instantiate(Class<? extends T> c)
@@ -199,7 +199,7 @@ public class ProjectController implements Controller
 			{
 				return c.newInstance();
 			}
-			catch (InstantiationException | IllegalAccessException e)
+			catch(InstantiationException | IllegalAccessException e)
 			{
 				throw new RuntimeException(e);
 			}

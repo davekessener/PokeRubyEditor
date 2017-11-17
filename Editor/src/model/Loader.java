@@ -45,6 +45,11 @@ public class Loader
 	
 	public void writeFile(File f, JsonValue v)
 	{
+		if(f.getParentFile() != null)
+		{
+			f.getParentFile().mkdirs();
+		}
+		
 		try
 		{
 			BufferedWriter bw = new BufferedWriter(new FileWriter(f));

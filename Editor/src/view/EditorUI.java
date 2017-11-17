@@ -45,6 +45,7 @@ public class EditorUI implements UI, MenuManager
 		menu.getMenus().addAll(fileMenu, projectMenu, optionsMenu);
 		
 		menus.put("file", fileMenu);
+		menus.put("edit", projectMenu);
 		menus.put("options", optionsMenu);
 		
 		root.setTop(menu);
@@ -110,10 +111,12 @@ public class EditorUI implements UI, MenuManager
 	
 	private Menu createProjectMenu()
 	{
-		Menu m = new Menu("Project");
+		Menu m = new Menu("Edit");
 		
 		m.getItems().addAll(
-			createMenu("project:new", "New")
+			createMenu("edit:new", "New"),
+			createMenuItem("edit:undo", "Undo"),
+			createMenuItem("edit:redo", "Redo")
 		);
 		
 		return m;

@@ -20,7 +20,7 @@ public class TabbedUI implements UI
 		Node content = ui.getNode();
 		tab.setContent(content);
 		tab.setClosable(false);
-		content.setStyle("-fx-padding: 10 10 10 10;");
+		content.setStyle("-fx-padding: 10 10 0 10;");
 		mRoot.getTabs().add(tab);
 		return this;
 	}

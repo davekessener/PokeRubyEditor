@@ -9,7 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import lib.ObservableMap;
+import lib.observe.ObservableMap;
 import model.Tileset.Tile;
 import view.UI;
 import view.tilemap.TilesetView;

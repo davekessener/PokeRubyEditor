@@ -47,6 +47,11 @@ public class MapLayerManager extends LayerManager
 		return i < mMap.getLayers(id).size() ? i + off : -1;
 	}
 	
+	public String getTile(String lid, int idx, int x, int y)
+	{
+		return mMap.getLayers(lid).get(idx).get(x, y);
+	}
+	
 	public void setTile(String lid, int idx, int x, int y, String t)
 	{
 		mMap.getLayers(lid).get(idx).set(x, y, t);

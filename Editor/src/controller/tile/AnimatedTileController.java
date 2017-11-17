@@ -1,7 +1,7 @@
 package controller.tile;
 
 import controller.tile.TileController.TileWriter;
-import lib.ObservableList;
+import lib.observe.ObservableList;
 import model.Tileset.AnimatedTile;
 import model.Vec2;
 import view.tile.AnimatedTileUI;
@@ -18,7 +18,7 @@ public class AnimatedTileController implements ActualTileController
 	{
 		mTile = t;
 		mWriter = w;
-		mVertices = new ObservableList<>(t.getFrames());
+		mVertices = ObservableList.Instantiate(t.getFrames());
 		mUI = new AnimatedTileUI(mVertices, t.getPeriod());
 		
 		mUI.setOnSelection(p -> setSelection(p));

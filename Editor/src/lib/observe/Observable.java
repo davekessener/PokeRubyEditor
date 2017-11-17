@@ -1,4 +1,4 @@
-package lib;
+package lib.observe;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,6 +6,7 @@ import java.util.Set;
 public abstract class Observable implements IObservable
 {
 	private Set<Observer> mObservers = new HashSet<>();
+	private boolean mSuspended = false;
 	
 	@Override
 	public void addObserver(Observer o)
@@ -21,9 +22,16 @@ public abstract class Observable implements IObservable
 	
 	protected void change()
 	{
-		for(Observer o : mObservers)
+		if(!mSuspended)
 		{
-			o.onChange(this);
+			mSuspended = true;
+			
+			for(Observer o : mObservers)
+			{
+				o.onChange(this);
+			}
+			
+			mSuspended = false;
 		}
 	}
 }

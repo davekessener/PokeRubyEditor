@@ -73,8 +73,12 @@ public class TabMap implements UI
 		
 		sc = new ScrollPane();
 		sc.setContent(mTileset);
+		sc.prefWidthProperty().bind(mTileset.widthProperty().add(16));
+		sc.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+		
 		mRoot.setRight(sc);
 		mRoot.setCenter(bp);
+		BorderPane.setMargin(sc, new Insets(0D, 0D, 0D, 5D));
 		
 		mLayerType.getItems().addAll(Tilemap.LAYERS);
 		mLayerType.valueProperty().addListener((ob, o, n) -> selectLayer(n, mLayerIndex));

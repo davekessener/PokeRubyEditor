@@ -48,18 +48,25 @@ public class TilemapController extends ContentController
 	
 	private void setTile(String lid, int idx, int x, int y, String tile)
 	{
-		mLayers.setTile(lid, idx, x, y, tile);
-		change();
+		String t = mLayers.getTile(lid, idx, x, y);
+		
+		act(
+			() -> mLayers.setTile(lid, idx, x, y, tile),
+			() -> mLayers.setTile(lid, idx, x, y, t));
 	}
 	
 	private void setMeta(int x, int y, String id)
 	{
-		mTilemap.getMeta().set(x, y, id);
-		change();
+		String m = mTilemap.getMeta().get(x, y);
+		
+		act(
+			() -> mTilemap.getMeta().set(x, y, id),
+			() -> mTilemap.getMeta().set(x, y, m));
 	}
 	
 	private void resize(int w, int h)
 	{
+		// TODO proper undo support
 		mLayers.resize(w, h);
 		mTabMeta.refreshMap(mTilemap.getMeta());
 		change();

@@ -1,6 +1,6 @@
 package lib.tilemap;
 
-import lib.Observable;
+import lib.observe.Observable;
 import model.ILayer;
 import model.Layer;
 

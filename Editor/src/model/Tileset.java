@@ -8,13 +8,13 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
-import lib.ObservableMap;
+import lib.observe.ObservableMap;
 
 public class Tileset implements JsonModel
 {
 	private int iSize;
 	private String sSource;
-	private final ObservableMap<String, Tile> mTiles = new ObservableMap<>(new LinkedHashMap<>());
+	private final ObservableMap<String, Tile> mTiles = ObservableMap.Instantiate(new LinkedHashMap<>());
 	
 	public int getSize() { return iSize; }
 	public String getSource() { return sSource; }

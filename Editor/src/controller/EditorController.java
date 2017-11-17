@@ -8,6 +8,9 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import lib.MenuManager;
 import lib.Options;
+import lib.action.ActionManager;
+import lib.action.IActionManager;
+import lib.observe.IObservable;
 import model.Loader;
 import view.EditorUI;
 
@@ -21,6 +24,7 @@ public class EditorController
 	private ProjectController mProject;
 	private Loader mLoader;
 	private Options mOptions;
+	private IActionManager mActionManager;
 	
 	private EditorController()
 	{
@@ -29,6 +33,7 @@ public class EditorController
 	public Loader getLoader() { return mLoader; }
 	public Options getOptions() { return mOptions; }
 	public MenuManager getMenuManager() { return mUI; }
+	public IActionManager getActionManager() { return mActionManager; }
 	
 	public void run(Stage primary)
 	{
@@ -36,8 +41,10 @@ public class EditorController
 		mUI = new EditorUI();
 		mScene = new Scene(mUI.getNode(), 800, 600);
 		mOptions = new Options();
+		mActionManager = IObservable.MakeObservable(new ActionManager(), IActionManager.class);
 
 		mOptions.register(mUI);
+		IObservable.AddObserver(mActionManager, o -> checkUndoRedo());
 
 		mPrimary.setTitle("PokeRuby Editor");
 		mPrimary.setOnCloseRequest(e -> close(e));
@@ -73,6 +80,16 @@ public class EditorController
 		return mProject != null ? mProject.tryClose() : true;
 	}
 	
+	private void checkUndoRedo()
+	{
+		mUI.setHandler("edit:undo", mActionManager.canUndo()
+				? () -> mActionManager.undo()
+				: null);
+		mUI.setHandler("edit:redo", mActionManager.canRedo()
+				? () -> mActionManager.redo()
+				: null);
+	}
+	
 	private void registerActionHandlers()
 	{
 		mUI.setHandler("file:open", () -> {
@@ -82,6 +99,7 @@ public class EditorController
 			if(dir != null) open(dir);
 		});
 		
-		mUI.setHandler("file:exit", () -> mPrimary.close());
+		mUI.setHandler("file:exit", () -> 
+			mPrimary.fireEvent(new WindowEvent(mPrimary, WindowEvent.WINDOW_CLOSE_REQUEST)));
 	}
 }
