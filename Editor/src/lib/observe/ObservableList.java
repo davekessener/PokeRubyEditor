@@ -1,49 +1,36 @@
 package lib.observe;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.List;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 
-public interface ObservableList<T> extends IObservable, List<T>
+import static lib.observe.IInvocationCollection.ClassCastFilter;
+import static lib.observe.IInvocationCollection.MethodNameFilter;
+import static lib.observe.IInvocationCollection.OnModifyFilter;
+import static lib.observe.IInvocationCollection.DeferredInvocation;
+import static lib.observe.IInvocationCollection.ObjectHolder;
+import static lib.observe.IInvocationCollection.Chain;
+
+public abstract class ObservableList<T> implements IObservableList<T>
 {
-	public Property<Number> sizeProperty();
-	
 	@SuppressWarnings("unchecked")
-	public static <T> ObservableList<T> Instantiate(List<T> target)
+	public static <T> IObservableList<T> Instantiate(List<T> target)
 	{
-		return (ObservableList<T>) Proxy.newProxyInstance(
+		Property<Number> sizeProperty = new SimpleIntegerProperty();
+		ObservableInvocation invocationHandler = new ObservableInvocation(new BindingInvocation(
+			(new InvocationCollection())
+				.addInvocation(ClassCastFilter(List.class), DeferredInvocation(target))
+				.addInvocation(MethodNameFilter("sizeProperty"), ObjectHolder(sizeProperty))),
+			Chain(ClassCastFilter(List.class), OnModifyFilter(Collections.unmodifiableList(target))));
+		
+		invocationHandler.addObserver(o -> sizeProperty.setValue(target.size()));
+		
+		return (IObservableList<T>) Proxy.newProxyInstance(
 				ObservableList.class.getClassLoader(),
-				new Class<?>[] { ObservableList.class },
-				new ListInvocation<>(target));
-	}
-	
-	static class ListInvocation<T> extends BindingInvocation
-	{
-		private final Property<Number> mSizeProperty;
-
-		public ListInvocation(final List<T> t)
-		{
-			super(t, List.class);
-
-			mSizeProperty = new SimpleIntegerProperty();
-			
-			this.addObserver(x -> mSizeProperty.setValue(t.size()));
-		}
-
-		@Override
-		protected Object onUnknownTarget(Object x, Method m, Object[] a) throws Throwable
-		{
-			if(m.getDeclaringClass().isAssignableFrom(ObservableList.class))
-			{
-				return mSizeProperty;
-			}
-			else
-			{
-				return super.onUnknownTarget(x, m, a);
-			}
-		}
+				new Class<?>[] { IObservableList.class },
+				invocationHandler);
 	}
 }

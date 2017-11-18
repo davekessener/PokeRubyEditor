@@ -8,13 +8,14 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import lib.observe.IObservableMap;
 import lib.observe.ObservableMap;
 
 public class Tileset implements JsonModel
 {
 	private int iSize;
 	private String sSource;
-	private final ObservableMap<String, Tile> mTiles = ObservableMap.Instantiate(new LinkedHashMap<>());
+	private final IObservableMap<String, Tile> mTiles = ObservableMap.Instantiate(new LinkedHashMap<>());
 	
 	public int getSize() { return iSize; }
 	public String getSource() { return sSource; }
@@ -22,7 +23,7 @@ public class Tileset implements JsonModel
 	public void setSize(int s) { iSize = s; }
 	public void setSource(String s) { sSource = s; }
 	
-	public ObservableMap<String, Tile> getTiles() { return mTiles; }
+	public IObservableMap<String, Tile> getTiles() { return mTiles; }
 	public void addTile(Tile t) { mTiles.put(t.getID(), t); }
 	
 	@Override

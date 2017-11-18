@@ -12,7 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lib.EnterableTextField;
-import lib.observe.ObservableList;
+import lib.observe.IObservableList;
 import model.Tileset.Type;
 import model.Vec2;
 
@@ -27,7 +27,7 @@ public class AnimatedTileUI extends BasicTileUI
 	private Callback<Integer> mOnPeriodChange;
 	private final Property<Number> mSelectedFrame;
 
-	public AnimatedTileUI(ObservableList<Vec2> frames, int period)
+	public AnimatedTileUI(IObservableList<Vec2> frames, int period)
 	{
 		mRoot = new HBox();
 		mFrames = frames;

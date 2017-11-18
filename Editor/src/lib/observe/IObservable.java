@@ -11,7 +11,14 @@ public interface IObservable
 	@SuppressWarnings("unchecked")
 	public static <T> T MakeObservable(Object o, Class<T> c)
 	{
-		return (T) Proxy.newProxyInstance(c.getClassLoader(), new Class<?>[] { c }, new BindingInvocation(o, c));
+		return (T) Proxy.newProxyInstance(
+				c.getClassLoader(),
+				new Class<?>[] { c },
+				new ObservableInvocation(new BindingInvocation(
+						(new InvocationCollection()).addInvocation(
+								IInvocationCollection.ClassCastFilter(c),
+								IInvocationCollection.DeferredInvocation(o))),
+						IInvocationCollection.ACCEPT_ALL));
 	}
 	
 	public static void AddObserver(Object p, Observer o)

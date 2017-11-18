@@ -9,7 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import lib.observe.ObservableMap;
+import lib.observe.IObservableMap;
 import model.Tileset.Tile;
 import view.UI;
 import view.tilemap.TilesetView;
@@ -22,7 +22,7 @@ public class TilesetUI implements UI
 	private Runnable mOnAddTiles;
 	private TilesetView.Callback mOnSelectTile;
 	
-	public TilesetUI(Image src, int ts, ObservableMap<String, Tile> tiles)
+	public TilesetUI(Image src, int ts, IObservableMap<String, Tile> tiles)
 	{
 		mRoot = new BorderPane();
 		mTilesetSource = new TiledImageView(src, ts);

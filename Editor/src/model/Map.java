@@ -1,8 +1,11 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
@@ -12,7 +15,7 @@ public class Map implements JsonModel
 	private String sTilemap;
 	private String sBorder;
 	private final java.util.Map<Direction, Neighbor> mNeighbors = new HashMap<>();
-	private JsonValue mEntities;
+	private final List<Event> mEntities = new ArrayList<>();
 	
 	public String getName() { return sName; }
 	public void setName(String name) { sName = name; }
@@ -21,6 +24,7 @@ public class Map implements JsonModel
 	public String getBorderID() { return sBorder; }
 	public void setBorderID(String id) { sBorder = id; }
 	public java.util.Map<Direction, Neighbor> getNeighbors() { return mNeighbors; }
+	public List<Event> getEvents() { return mEntities; }
 	
 	@Override
 	public void load(JsonValue value)
@@ -49,7 +53,14 @@ public class Map implements JsonModel
 			}
 		}
 		
-		mEntities = tag.get("entities");
+		mEntities.clear();
+		JsonValue entities = tag.get("entities");
+		if(entities != null) for(JsonValue v : entities.asArray())
+		{
+			Event e = new Event();
+			e.load(v);
+			mEntities.add(e);
+		}
 	}
 
 	@Override
@@ -73,10 +84,12 @@ public class Map implements JsonModel
 			tag.add("neighbors", ns);
 		}
 		
-		if(mEntities != null)
+		JsonArray entities = new JsonArray();
+		for(final Event e : mEntities)
 		{
-			tag.add("entities", mEntities);
+			entities.add(e.save());
 		}
+		tag.add("entities", entities);
 		
 		return tag;
 	}

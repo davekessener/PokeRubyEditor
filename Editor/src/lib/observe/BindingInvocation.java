@@ -2,54 +2,34 @@ package lib.observe;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
 
-import javafx.util.Pair;
-
-public class BindingInvocation extends Observable implements InvocationHandler
+public class BindingInvocation implements InvocationHandler
 {
-	private final List<Pair<Object, Class<?>>> mTargets;
+	private final IInvocationCollection mInvocations;
+	private final InvocationHandler mOnUnknown;
 	
-	@SuppressWarnings("unchecked")
-	public BindingInvocation(Object o, Class<?> c) { this(new Pair[] { new Pair<Object, Class<?>>(o, c) }); }
-	public BindingInvocation(Pair<Object, Class<?>>[] os)
+	public BindingInvocation(IInvocationCollection invs) { this(invs, DEFAULT_ONUNKNOWN); }
+	public BindingInvocation(IInvocationCollection invs, InvocationHandler unknown)
 	{
-		mTargets = Arrays.asList(os);
+		mInvocations = invs;
+		mOnUnknown = unknown;
 	}
 
 	@Override
 	public Object invoke(Object x, Method m, Object[] a) throws Throwable
 	{
-		Class<?> c = m.getDeclaringClass();
+		InvocationHandler h = mInvocations.getHandler(x, m, a);
 		
-		if(c.isAssignableFrom(IObservable.class))
+		if(h != null)
 		{
-			return m.invoke(this, a);
+			return h.invoke(x, m, a);
 		}
-		
-		for(final Pair<Object, Class<?>> p : mTargets)
+		else
 		{
-			if(c.isAssignableFrom(p.getValue()))
-			{
-				return doInvoke(m, p.getKey(), a);
-			}
+			return mOnUnknown.invoke(x, m, a);
 		}
-		
-		return onUnknownTarget(x, m, a);
 	}
 	
-	protected Object onUnknownTarget(Object x, Method m, Object[] a) throws Throwable
-	{
-		throw new RuntimeException("Called method " + m.getName() + " on object of type " + x.getClass().getName());
-	}
-	
-	private Object doInvoke(Method m, Object o, Object[] a) throws Throwable
-	{
-		Object r = m.invoke(o, a);
-		
-		change();
-		
-		return r;
-	}
+	private static final InvocationHandler DEFAULT_ONUNKNOWN = 
+			(x, m, a) -> { throw new RuntimeException("Called method " + m.getName() + " on object of type " + x.getClass().getName()); };
 }

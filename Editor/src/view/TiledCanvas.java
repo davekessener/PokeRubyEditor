@@ -18,7 +18,7 @@ public abstract class TiledCanvas extends Canvas
 	private TileActivatedHandler mCallback;
 	private boolean mTrueClear;
 	private Property<Boolean> mDrawGrid;
-	private Property<String> mMouseOverTile;
+	private Property<String> mMouseOverTile; // TODO remove that shit!
 	
 	public TiledCanvas(int w, int h, int s)
 	{
