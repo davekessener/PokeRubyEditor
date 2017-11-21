@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import controller.EditorController;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -19,8 +18,8 @@ import javafx.scene.layout.RowConstraints;
 import lib.EnterableTextField;
 import lib.EnterableTextField.EmptyAcceptor;
 import lib.IDValidator;
+import lib.Utils;
 import model.Direction;
-import model.Loader;
 import model.Map.Neighbor;
 import model.Tilemap;
 import model.Tileset;
@@ -143,14 +142,9 @@ public class TabNeighbors implements UI
 	
 	private static int loadTileSize(String id)
 	{
-		Loader l = EditorController.Instance.getLoader();
-		model.Map map = new model.Map();
-		Tilemap tm = new Tilemap();
-		Tileset ts = new Tileset();
-		
-		map.load(l.loadData("map", id));
-		tm.load(l.loadData("tilemap", map.getTilemapID()));
-		ts.load(l.loadData("tileset", tm.getTilesetID()));
+		model.Map map = Utils.loadMap(id);
+		Tilemap tm = Utils.loadTilemap(map.getTilemapID());
+		Tileset ts = Utils.loadTileset(tm.getTilesetID());
 		
 		return ts.getSize();
 	}

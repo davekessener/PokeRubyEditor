@@ -1,7 +1,6 @@
 package controller.tile;
 
 import controller.tile.TileController.TileWriter;
-import lib.observe.IObservableList;
 import lib.observe.ObservableList;
 import model.Tileset.AnimatedTile;
 import model.Vec2;
@@ -13,7 +12,7 @@ public class AnimatedTileController implements ActualTileController
 	private final AnimatedTile mTile;
 	private final AnimatedTileUI mUI;
 	private final TileWriter mWriter;
-	private final IObservableList<Vec2> mVertices;
+	private final ObservableList<Vec2> mVertices;
 	
 	public AnimatedTileController(AnimatedTile t, TileWriter w)
 	{

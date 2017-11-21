@@ -2,6 +2,8 @@ package model;
 
 import com.eclipsesource.json.JsonValue;
 
+import lib.Utils;
+
 public class Layer implements JsonModel, ILayer
 {
 	private int mWidth, mHeight;

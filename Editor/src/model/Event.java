@@ -22,6 +22,7 @@ public class Event implements JsonModel
 	public Vec2 getLocation() { return mLocation; }
 	public void setLocation(Vec2 p) { mLocation = p; }
 	public Argument getArgument() { return mArgument; }
+	public void setArgument(Argument a) { mArgument = a; }
 
 	@Override
 	public void load(JsonValue value)
@@ -66,7 +67,10 @@ public class Event implements JsonModel
 	public static class TextArgument extends Argument
 	{
 		private String mText;
-
+		
+		public String getText() { return mText; }
+		public void setText(String s) { mText = s; }
+		
 		@Override
 		public void load(JsonValue value)
 		{

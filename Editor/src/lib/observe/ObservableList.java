@@ -14,10 +14,12 @@ import static lib.observe.IInvocationCollection.DeferredInvocation;
 import static lib.observe.IInvocationCollection.ObjectHolder;
 import static lib.observe.IInvocationCollection.Chain;
 
-public abstract class ObservableList<T> implements IObservableList<T>
+public interface ObservableList<T> extends IObservable, List<T>
 {
+	public abstract Property<Number> sizeProperty();
+	
 	@SuppressWarnings("unchecked")
-	public static <T> IObservableList<T> Instantiate(List<T> target)
+	public static <T> ObservableList<T> Instantiate(List<T> target)
 	{
 		Property<Number> sizeProperty = new SimpleIntegerProperty();
 		ObservableInvocation invocationHandler = new ObservableInvocation(new BindingInvocation(
@@ -28,9 +30,9 @@ public abstract class ObservableList<T> implements IObservableList<T>
 		
 		invocationHandler.addObserver(o -> sizeProperty.setValue(target.size()));
 		
-		return (IObservableList<T>) Proxy.newProxyInstance(
+		return (ObservableList<T>) Proxy.newProxyInstance(
 				ObservableList.class.getClassLoader(),
-				new Class<?>[] { IObservableList.class },
+				new Class<?>[] { ObservableList.class },
 				invocationHandler);
 	}
 }

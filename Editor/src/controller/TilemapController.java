@@ -2,8 +2,8 @@ package controller;
 
 import javafx.scene.Node;
 import lib.IDValidator;
+import lib.Utils;
 import lib.tilemap.MapLayerManager;
-import model.Loader;
 import model.Tilemap;
 import model.Tileset;
 import view.TabbedUI;
@@ -29,7 +29,7 @@ public class TilemapController extends ContentController
 		super(tm);
 		mUI = new TabbedUI();
 		mTilemap = tm;
-		mTileset = loadTileset(mTilemap.getTilesetID());
+		mTileset = Utils.loadTileset(mTilemap.getTilesetID());
 		mLayers = new MapLayerManager(mTilemap);
 		mRenderTileset = new TilesetRenderer(mTileset);
 		
@@ -72,16 +72,6 @@ public class TilemapController extends ContentController
 		change();
 	}
 	
-	private Tileset loadTileset(String id)
-	{
-		Loader l = EditorController.Instance.getLoader();
-		Tileset ts = new Tileset();
-		
-		ts.load(l.loadData("tileset", id));
-		
-		return ts;
-	}
-
 	@Override
 	public Node getUI()
 	{

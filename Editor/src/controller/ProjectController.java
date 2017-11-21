@@ -3,11 +3,13 @@ package controller;
 import java.io.File;
 import java.util.HashMap;
 
+import controller.map.MapController;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import lib.MenuManager;
+import lib.Utils;
 import model.JsonModel;
 import model.Loader;
 import model.Map;
@@ -178,14 +180,9 @@ public class ProjectController implements Controller
 		
 		public ContentController instantiateController(String id)
 		{
-			Loader l = EditorController.Instance.getLoader();
-			JsonModel model = instantiateModel();
-			
-			model.load(l.loadData(mType, id));
-			
 			try
 			{
-				return mControllerClass.getConstructor(String.class, mModelClass).newInstance(id, model);
+				return mControllerClass.getConstructor(String.class, mModelClass).newInstance(id, Utils.loadJSON(instantiateModel(), mType, id));
 			}
 			catch(Exception e)
 			{

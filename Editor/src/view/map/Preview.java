@@ -1,8 +1,7 @@
 package view.map;
 
-import controller.EditorController;
+import lib.Utils;
 import lib.tilemap.MapLayerManager;
-import model.Loader;
 import model.Map;
 import model.Tilemap;
 import model.Tileset;
@@ -31,15 +30,10 @@ public class Preview extends TilesetCanvas
 	
 	public static Preview Create(String id)
 	{
-		Loader l = EditorController.Instance.getLoader();
-		Map map = new Map();
-		Tilemap tilemap = new Tilemap();
-		Tileset ts = new Tileset();
+		Map map = Utils.loadMap(id);
+		Tilemap tilemap = Utils.loadTilemap(map.getTilemapID());
+		Tileset tileset = Utils.loadTileset(tilemap.getTilesetID());
 		
-		map.load(l.loadData("map", id));
-		tilemap.load(l.loadData("tilemap", map.getTilemapID()));
-		ts.load(l.loadData("tileset", tilemap.getTilesetID()));
-		
-		return new Preview(id, tilemap, ts);
+		return new Preview(id, tilemap, tileset);
 	}
 }

@@ -1,33 +1,34 @@
 package view.map;
 
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 import controller.EditorController;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import lib.observe.IObservableList;
-import model.Event;
+import lib.observe.ObservableStore;
+import lib.store.Store;
 import view.UI;
 
 public class TabEvents implements UI
 {
-	private final BorderPane mRoot;
+	private final BorderPane mRoot, mEventView;
 	private final Preview mPreview;
-	private final IObservableList<Event> mEvents;
+	private final Store<String> mEvents;
+	private final ComboBox<String> mEventSelector;
 	private Runnable mOnAdd;
-	private Function<Integer, Void> mOnDelete;
+	private Consumer<String> mOnDelete;
+	private Consumer<String> mOnSelectEvent;
 	
-	public TabEvents(IObservableList<Event> events, Preview preview)
+	public TabEvents(ObservableStore<String> events, Preview preview)
 	{
 		mRoot = new BorderPane();
+		mEventView = new BorderPane();
 		mPreview = preview;
 		mEvents = events;
 		
@@ -39,38 +40,76 @@ public class TabEvents implements UI
 		ScrollPane sc = new ScrollPane();
 		sc.setContent(st);
 		
-		VBox vb = new VBox();
-		HBox hb = new HBox();
+		mRoot.setCenter(sc);
+		
+		sc = new ScrollPane();
+		
+		GridPane gp = new GridPane();
 
 		Button addBtn = new Button("+");
 		Button delBtn = new Button("-");
 		
-		ComboBox<String> eventIDs = new ComboBox<>();
+		mEventSelector = new ComboBox<>();
 		
-		Runnable refreshIDList = () -> eventIDs.getItems().addAll(mEvents.stream().map(e -> e.getID()).collect(Collectors.toList()));
+		Runnable refreshIDList = () -> {
+			mEventSelector.getItems().clear();
+			events.forEach(id -> mEventSelector.getItems().add(id));
+		};
 		
 		refreshIDList.run();
 		
-		hb.setPadding(new Insets(0D, 0D, 5D, 3D));
-		hb.getChildren().addAll(delBtn, eventIDs, addBtn);
+		addBtn.setPrefWidth(25D);
+		delBtn.setPrefWidth(25D);
+		mEventSelector.setMaxWidth(Double.MAX_VALUE);
+		gp.addRow(0, delBtn, mEventSelector, addBtn);
 		
-		vb.getChildren().add(hb);
+		GridPane.setHgrow(mEventSelector, Priority.ALWAYS);
 		
-		mRoot.setCenter(sc);
-		mRoot.setRight(vb);
+		mEventView.setTop(gp);
+		
+		sc.setContent(mEventView);
+		
+		mRoot.setRight(sc);
 		
 		EditorController.Instance.getMenuManager().setStatus(mPreview.mousedOverTileProperty());
 		
 		addBtn.setOnAction(e -> addEvent());
-		delBtn.setOnAction(e -> deleteEvent(eventIDs.getSelectionModel().getSelectedIndex()));
+		delBtn.setOnAction(e -> deleteEvent(mEventSelector.getSelectionModel().getSelectedIndex()));
+		mEventSelector.valueProperty().addListener((ob, o, n) -> onSelectEvent(n));
 		
-		mEvents.addObserver(o -> refreshIDList.run());
+		events.addObserver(o -> refreshIDList.run());
 		
 		mPreview.draw();
 	}
 	
 	public void setOnAdd(Runnable cb) { mOnAdd = cb; }
-	public void setOnDelete(Function<Integer, Void> cb) { mOnDelete = cb; }
+	public void setOnDelete(Consumer<String> cb) { mOnDelete = cb; }
+	public void setOnSelectEvent(Consumer<String> cb) { mOnSelectEvent = cb; }
+	
+	public void clearSelection()
+	{
+		mEventSelector.getSelectionModel().select(-1);
+		mEventView.setCenter(null);
+	}
+	
+	public void selectEvent(String id)
+	{
+		mEventSelector.getSelectionModel().select(id);
+		onSelectEvent(id);
+	}
+	
+	public void setEventView(EventView ev)
+	{
+		mEventView.setCenter(ev.getNode());
+	}
+	
+	private void onSelectEvent(String id)
+	{
+		if(mOnSelectEvent != null)
+		{
+			mOnSelectEvent.accept(id);
+		}
+	}
 	
 	private void addEvent()
 	{
@@ -84,7 +123,7 @@ public class TabEvents implements UI
 	{
 		if(idx >= 0 && mOnDelete != null)
 		{
-			mOnDelete.apply(idx);
+			mOnDelete.accept(mEvents.get(idx));
 		}
 	}
 
