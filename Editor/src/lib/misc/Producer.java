@@ -1,4 +1,4 @@
-package lib;
+package lib.misc;
 
 public interface Producer<T>
 {

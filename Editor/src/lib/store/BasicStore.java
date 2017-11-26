@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-import lib.Producer;
+import lib.misc.Producer;
 
 public class BasicStore<T> implements Store<T>
 {

@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import controller.EditorController;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import model.Vec2;
+import lib.misc.Vec2;
+import lib.mouse.SimpleMouseHandler;
 import view.RenderUtils;
 import view.TiledCanvas;
 
@@ -20,25 +22,11 @@ public class TilesetView extends TiledCanvas
 	private List<Vec2> mTilePos;
 	private int mWidth;
 	private TileView mTiles;
-	private Callback mCallback;
+	private Consumer<String> mOnSelect;
 	
 	public TilesetView(TilesetRenderer r, int w)
 	{
 		this(r.getSource(), r.getTileSize(), new BasicMapWrapper(r.getTiles()), w);
-	}
-	
-	public int getSelectedIndex()
-	{
-		Vec2 p = super.getSelected();
-		
-		return p == null ? -1 : p.getX() + p.getY() * mWidth;
-	}
-	
-	public void setSelectedIndex(int idx)
-	{
-		if(idx < 0 || idx >= mTileIDs.size()) idx = 0;
-		
-		setSelected(new Vec2(idx % mWidth, idx / mWidth));
 	}
 	
 	public TilesetView(Image src, int ts, TileView tiles, int w)
@@ -51,25 +39,40 @@ public class TilesetView extends TiledCanvas
 		mTileIDs = new ArrayList<>();
 		mTilePos = new ArrayList<>();
 		
-		redraw();
+		draw();
 		
 		super.setSelected(new Vec2(0, 0));
+		super.setMouseHandler(new SimpleMouseHandler((e, p) -> onSelect(p)));
 		
-		this.setOnTileActivated((b, x, y) -> {
-			String s = getID(x + y * mWidth);
-			
-			setSelected(new Vec2(x, y));
-
-			if(mCallback != null)
-			{
-				mCallback.onSelect(s);
-			}
-		});
-
 		drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
 	}
 	
-	public void redraw()
+	public void setOnSelect(Consumer<String> cb) { mOnSelect = cb; }
+	
+	private void onSelect(Vec2 p)
+	{
+		setSelected(p);
+		
+		if(mOnSelect != null)
+		{
+			mOnSelect.accept(getSelectedID());
+		}
+	}
+
+	public int getSelectedIndex()
+	{
+		return getIndexOf(getSelected());
+	}
+	
+	public void setSelectedIndex(int idx)
+	{
+		if(idx < 0 || idx >= mTileIDs.size()) idx = 0;
+		
+		setSelected(new Vec2(idx % mWidth, idx / mWidth));
+	}
+	
+	@Override
+	public void draw()
 	{
 		mTileIDs.clear();
 		mTilePos.clear();
@@ -88,7 +91,7 @@ public class TilesetView extends TiledCanvas
 		super.draw();
 	}
 	
-	public void setSelected(String id)
+	public void selectID(String id)
 	{
 		int i = mTileIDs.indexOf(id);
 		super.setSelected(new Vec2(i % mWidth, i / mWidth));
@@ -99,8 +102,9 @@ public class TilesetView extends TiledCanvas
 		return getID(getSelectedIndex());
 	}
 	
+	public int getIndexOf(Vec2 p) { return p == null ? -1 : p.getX() + p.getY() * mWidth; }
 	public String getID(int i) { return i >= 0 && i < mTileIDs.size() ? mTileIDs.get(i) : null; }
-	public void setOnSelect(Callback cb) { mCallback = cb; }
+	public String getID(Vec2 p) { return getID(getIndexOf(p)); }
 	
 	@Override
 	protected void drawTile(GraphicsContext gc, int x, int y)
@@ -112,8 +116,6 @@ public class TilesetView extends TiledCanvas
 			RenderUtils.RenderTile(gc, mSource, getTileSize(), mTilePos.get(i), new Vec2(x, y));
 		}
 	}
-	
-	public static interface Callback { public abstract void onSelect(String id); }
 	
 	public static interface TileView
 	{

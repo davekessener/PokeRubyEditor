@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javafx.beans.property.Property;
 import javafx.geometry.Insets;
@@ -191,7 +192,7 @@ public class EditorUI implements UI, MenuManager
 			for(String s : opts)
 			{
 				MenuItem i = new MenuItem(s);
-				i.setOnAction(e -> c.consume(s));
+				i.setOnAction(e -> c.accept(s));
 				m.getItems().add(i);
 			}
 		}

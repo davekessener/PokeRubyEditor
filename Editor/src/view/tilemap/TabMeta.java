@@ -10,14 +10,19 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import lib.MetaCollection;
-import lib.tilemap.StaticLayerManager;
-import model.ILayer;
+import lib.misc.Rect;
+import lib.misc.Vec2;
+import lib.mouse.MouseHandlerCollection;
+import lib.mouse.SimpleMouseHandler;
+import lib.tilemap.MetaCollection;
+import model.layer.Layer;
+import model.layer.StaticLayerManager;
 import view.TilesetCanvas;
 import view.UI;
 
@@ -33,23 +38,19 @@ public class TabMeta implements UI
 	private String mSelectedID;
 	private MetaChangeHandler mCallback;
 	
-	public TabMeta(ILayer metas, int ts, TilesetCanvas tm)
+	public TabMeta(Layer metas, int ts, TilesetCanvas tm)
 	{
-		int w = metas.getWidth();
-		int h = metas.getHeight();
+		Vec2 s = metas.dimension();
 		
 		mRoot = new BorderPane();
 		mMetas = new MetaCollection();
 		mMetaList = new ListView<>();
-		mMetaLayer = new StaticLayerManager(w, h);
+		mMetaLayer = new StaticLayerManager(s);
 		mTilemap = tm;
 		
-		for(int y = 0 ; y < h ; ++y)
+		for(Vec2 p : new Rect(s.getX(), s.getY()))
 		{
-			for(int x = 0 ; x < w ; ++x)
-			{
-				mMetas.addMeta(metas.get(x, y));
-			}
+			mMetas.addMeta(metas.get(p));
 		}
 		
 		for(Entry<String, Color> e : mMetas.entrySet())
@@ -69,7 +70,7 @@ public class TabMeta implements UI
 		mTilemap.drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
 		mMetamap.setTrueClear(true);
 		mMetamap.setActiveLayer(0);
-		mMetaLayer.addLayer(metas);
+		mMetaLayer.add(metas);
 		
 		mNewMetaInput = new TextField();
 		ScrollPane sp = new ScrollPane();
@@ -106,20 +107,23 @@ public class TabMeta implements UI
 		});
 		addBtn.setOnAction(e -> addMeta(mNewMetaInput.getText()));
 		
-		mMetamap.setOnLeftClick((x, y) -> writeMeta(x, y, mSelectedID));
-		mMetamap.setOnRightClick(id -> select(id));
+		mMetamap.setMouseHandler((new MouseHandlerCollection())
+			.add(e -> e.getButton().equals(MouseButton.PRIMARY),
+					new SimpleMouseHandler((me, p) -> writeMeta(p.getX(), p.getY(), mSelectedID)))
+			.add(e -> e.getButton().equals(MouseButton.SECONDARY), 
+					new SimpleMouseHandler((me, p) -> mMetaLayer.get(0).get(p))));
 		
-		redraw();
+		draw();
 	}
 	
-	public void refreshMap(ILayer metas)
+	public void refreshMap(Layer metas)
 	{
-		mMetaLayer = new StaticLayerManager(metas.getWidth(), metas.getHeight());
+		mMetaLayer = new StaticLayerManager(metas.dimension());
 		mMetamap.setManager(mMetaLayer);
-		mMetaLayer.addLayer(metas);
+		mMetaLayer.add(metas);
 	}
 	
-	public void redraw()
+	public void draw()
 	{
 		mTilemap.draw();
 		mMetamap.draw();
@@ -132,7 +136,7 @@ public class TabMeta implements UI
 		mMetaList.getSelectionModel().select(mMetaList.getItems().size() - 1);
 		mNewMetaInput.setText("");
 		
-		redraw();
+		draw();
 	}
 	
 	public Color getColorOfMeta(String id) { return mMetas.getColor(id); }

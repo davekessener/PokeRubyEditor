@@ -9,7 +9,7 @@ import static lib.observe.IInvocationCollection.OnModifyFilter;
 import static lib.observe.IInvocationCollection.DeferredInvocation;
 import static lib.observe.IInvocationCollection.Chain;
 
-public interface ObservableMap<K, V> extends Map<K, V>, IObservable
+public interface ObservableMap<K, V> extends Map<K, V>, Observable
 {
 	@SuppressWarnings("unchecked")
 	public static <K, V> ObservableMap<K, V> Instantiate(Map<K, V> target)

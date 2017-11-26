@@ -3,7 +3,7 @@ package view;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import model.Vec2;
+import lib.misc.Vec2;
 
 public class RenderUtils
 {

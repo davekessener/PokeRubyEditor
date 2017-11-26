@@ -1,8 +1,8 @@
 package controller.tile;
 
 import controller.tile.TileController.TileWriter;
+import lib.misc.Vec2;
 import model.Tileset.StaticTile;
-import model.Vec2;
 import view.tile.StaticTileUI;
 import view.tile.TileUI;
 

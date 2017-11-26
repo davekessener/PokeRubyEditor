@@ -2,8 +2,8 @@ package view.tile;
 
 import javafx.scene.Group;
 import javafx.scene.Parent;
+import lib.misc.Vec2;
 import model.Tileset.Type;
-import model.Vec2;
 
 public class StaticTileUI extends BasicTileUI
 {

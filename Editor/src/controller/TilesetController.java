@@ -3,9 +3,9 @@ package controller;
 import controller.tile.TileController;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
+import lib.misc.Vec2;
 import model.Tileset;
 import model.Tileset.Tile;
-import model.Vec2;
 import model.Tileset.StaticTile;
 import view.tile.TilesetUI;
 

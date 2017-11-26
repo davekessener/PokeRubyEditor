@@ -37,7 +37,6 @@ public class ProjectController implements Controller
 		
 		updateProjectTree();
 
-		mMenu.setHandler("file:close", () -> tryClose());
 		mMenu.setRange("edit:new", type -> createNew(type), CREATORS.keySet());
 	}
 	

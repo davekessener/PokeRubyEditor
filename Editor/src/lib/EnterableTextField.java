@@ -3,6 +3,7 @@ package lib;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javafx.scene.control.TextField;
@@ -13,7 +14,7 @@ import javafx.scene.input.KeyCode;
 public class EnterableTextField extends TextField
 {
 	private final List<Validator> mValidations;
-	private Callback mCallback;
+	private Consumer<String> mCallback;
 	private String mBackup;
 	
 	public EnterableTextField(String def)
@@ -56,13 +57,13 @@ public class EnterableTextField extends TextField
 				
 				if(mCallback != null)
 				{
-					mCallback.onChange(s);
+					mCallback.accept(s);
 				}
 			}
 		});
 	}
 	
-	public void setCallback(Callback cb)
+	public void setCallback(Consumer<String> cb)
 	{
 		mCallback = cb;
 	}
@@ -74,8 +75,6 @@ public class EnterableTextField extends TextField
 			mValidations.add(v);
 		}
 	}
-	
-	public static interface Callback { void onChange(String s); }
 	
 	public static abstract class Validator
 	{

@@ -1,4 +1,4 @@
-package lib;
+package lib.tilemap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javafx.scene.paint.Color;
+import lib.ColorGenerator;
 
 public class MetaCollection
 {

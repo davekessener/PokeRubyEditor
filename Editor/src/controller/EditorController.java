@@ -10,7 +10,7 @@ import lib.MenuManager;
 import lib.Options;
 import lib.action.ActionManager;
 import lib.action.IActionManager;
-import lib.observe.IObservable;
+import lib.observe.Observable;
 import model.Loader;
 import view.EditorUI;
 
@@ -41,10 +41,10 @@ public class EditorController
 		mUI = new EditorUI();
 		mScene = new Scene(mUI.getNode(), 800, 600);
 		mOptions = new Options();
-		mActionManager = IObservable.MakeObservable(new ActionManager(), IActionManager.class);
+		mActionManager = Observable.MakeObservable(new ActionManager(), IActionManager.class);
 
 		mOptions.register(mUI);
-		IObservable.AddObserver(mActionManager, o -> checkUndoRedo());
+		Observable.AddObserver(mActionManager, o -> checkUndoRedo());
 
 		mPrimary.setTitle("PokeRuby Editor");
 		mPrimary.setOnCloseRequest(e -> close(e));
@@ -61,6 +61,17 @@ public class EditorController
 		mProject = new ProjectController(dir);
 		mLoader = new Loader(dir);
 		mUI.setContent(mProject.getUI());
+		
+		mUI.setHandler("file:close", () -> tryCloseProject());
+	}
+	
+	private void tryCloseProject()
+	{
+		if(tryCloseCurrentProject())
+		{
+			mProject = null;
+			mUI.setContent(null);
+		}
 	}
 	
 	public void close(WindowEvent e)

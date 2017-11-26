@@ -8,6 +8,7 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import lib.misc.Vec2;
 import lib.observe.ObservableMap;
 
 public class Tileset implements JsonModel

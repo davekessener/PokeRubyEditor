@@ -9,6 +9,10 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import lib.misc.Rect;
+import lib.misc.Vec2;
+import model.layer.Layer;
+
 public class Tilemap implements JsonModel
 {
 	private String sTileset;
@@ -39,29 +43,26 @@ public class Tilemap implements JsonModel
 		return l;
 	}
 	
-	public void resize(int w, int h)
+	public void resize(Vec2 v)
 	{
-		iWidth = w;
-		iHeight = h;
+		iWidth = v.getX();
+		iHeight = v.getY();
 		
 		for(List<Layer> ls : mLayers.values())
 		{
 			for(Layer l : ls)
 			{
-				l.resize(w, h);
+				l.resize(v);
 			}
 		}
 		
-		mMeta.resize(w, h);
+		mMeta.resize(v);
 		
-		for(int y = 0 ; y < h ; ++y)
+		for(Vec2 p : new Rect(iWidth, iHeight))
 		{
-			for(int x = 0 ; x < w ; ++x)
+			if(mMeta.get(p) == null)
 			{
-				if(mMeta.get(x, y) == null)
-				{
-					mMeta.set(x, y, "wall");
-				}
+				mMeta.set(p, "wall");
 			}
 		}
 	}
@@ -78,7 +79,7 @@ public class Tilemap implements JsonModel
 		
 		mLayers.clear();
 		
-		for(String d : LAYERS)
+		for(String d : TYPES)
 		{
 			if(map.get(d) != null)
 			{
@@ -86,14 +87,14 @@ public class Tilemap implements JsonModel
 				
 				for(JsonValue v : map.get(d).asArray())
 				{
-					ls.add(loadLayer(v));
+					ls.add(JsonUtils.LoadLayer(iWidth, iHeight, v));
 				}
 				
 				mLayers.put(d, ls);
 			}
 		}
 		
-		mMeta = loadLayer(tag.get("meta"));
+		mMeta = JsonUtils.LoadLayer(iWidth, iHeight, tag.get("meta"));
 	}
 
 	@Override
@@ -112,7 +113,7 @@ public class Tilemap implements JsonModel
 			
 			for(Layer l : e.getValue())
 			{
-				layer.add(l.save());
+				layer.add(JsonUtils.SaveLayer(l));
 			}
 			
 			if(!e.getValue().isEmpty())
@@ -122,19 +123,10 @@ public class Tilemap implements JsonModel
 		}
 		
 		tag.add("map", map);
-		tag.add("meta", mMeta.save());
+		tag.add("meta", JsonUtils.SaveLayer(mMeta));
 		
 		return tag;
 	}
 	
-	private Layer loadLayer(JsonValue v)
-	{
-		Layer l = new Layer(iWidth, iHeight);
-		
-		l.load(v);
-		
-		return l;
-	}
-	
-	public static final String[] LAYERS = new String[] { "bottom", "top" };
+	public static final String[] TYPES = new String[] { "bottom", "top" };
 }

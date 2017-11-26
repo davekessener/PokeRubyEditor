@@ -1,41 +1,43 @@
 package view;
 
+import java.util.Optional;
+
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import model.Vec2;
+import lib.misc.Vec2;
+import lib.mouse.MouseHandler;
 
 public abstract class TiledCanvas extends Canvas
 {
 	private int mTileSize;
 	private int mWidth, mHeight;
 	private Vec2 mSelected;
-	private TileActivatedHandler mCallback;
 	private boolean mTrueClear;
 	private Property<Boolean> mDrawGrid;
-	private Property<String> mMouseOverTile; // TODO remove that shit!
+	private Property<Vec2> mMouseOverTile;
+	private MouseHandler mMouseCallback;
 	
-	public TiledCanvas(int w, int h, int s)
+	public TiledCanvas(int w, int h, int ts)
 	{
-		super(w * s, h * s);
-		mTileSize = s;
+		super(w * ts, h * ts);
+		mTileSize = ts;
 		mWidth = w;
 		mHeight = h;
-		mSelected = null;
-		mCallback = null;
 		mDrawGrid = new SimpleBooleanProperty(false);
-		mMouseOverTile = new SimpleStringProperty("");
+		mMouseOverTile = new SimpleObjectProperty<Vec2>();
 		mTrueClear = false;
 		
 		mDrawGrid.addListener((ob, o, n) -> draw());
 		
-		this.setOnMousePressed(e -> mouseClick(e));
-		this.setOnMouseDragged(e -> mouseClick(e));
+		this.setOnMousePressed(e -> mousePressed(e));
+		this.setOnMouseDragged(e -> mouseDrag(e));
+		this.setOnMouseReleased(e -> mouseReleased(e));
 		this.setOnMouseMoved(e -> mouseOver(e));
 	}
 	
@@ -45,10 +47,10 @@ public abstract class TiledCanvas extends Canvas
 	public void setDrawGrid(boolean v) { mDrawGrid.setValue(v); }
 	public void setTrueClear(boolean v) { mTrueClear = v; }
 	
-	public void setOnTileActivated(TileActivatedHandler h) { mCallback = h; }
+	public void setMouseHandler(MouseHandler h) { mMouseCallback = h; }
 	
 	public Property<Boolean> drawGridProperty() { return mDrawGrid; }
-	public Property<String> mousedOverTileProperty() { return mMouseOverTile; }
+	public Property<Vec2> mousedOverTileProperty() { return mMouseOverTile; }
 	
 	public void setWidth(int w)
 	{
@@ -107,24 +109,36 @@ public abstract class TiledCanvas extends Canvas
 		gc.strokeLine(0.5, mHeight * mTileSize - 0.5, mWidth * mTileSize - 0.5, mHeight * mTileSize - 0.5);
 	}
 	
-	protected void mouseClick(MouseEvent e)
+	protected void mousePressed(MouseEvent e)
 	{
-		Vec2 p = translate(e);
-		
-		if(p != null)
+		if(mMouseCallback != null)
 		{
-			onTileActivated(e.getButton(), p.getX(), p.getY());
+			translate(e).ifPresent(p -> mMouseCallback.onPressed(e, p));
+		}
+	}
+	
+	protected void mouseDrag(MouseEvent e)
+	{
+		if(mMouseCallback != null)
+		{
+			translate(e).ifPresent(p -> mMouseCallback.onDragged(e, p));
+		}
+	}
+	
+	protected void mouseReleased(MouseEvent e)
+	{
+		if(mMouseCallback != null)
+		{
+			mMouseCallback.onReleased(e);
 		}
 	}
 	
 	protected void mouseOver(MouseEvent e)
 	{
-		Vec2 p = translate(e);
-		
-		mMouseOverTile.setValue(p == null ? "" : ("X: " + p.getX() + ", Y: " + p.getY()));
+		mMouseOverTile.setValue(translate(e).orElse(null));
 	}
 	
-	protected Vec2 translate(MouseEvent e)
+	protected Optional<Vec2> translate(MouseEvent e)
 	{
 		int x = (int) (e.getX() / mTileSize);
 		int y = (int) (e.getY() / mTileSize);
@@ -135,15 +149,7 @@ public abstract class TiledCanvas extends Canvas
 			r = new Vec2(x, y);
 		}
 		
-		return r;
-	}
-	
-	protected void onTileActivated(MouseButton b, int x, int y)
-	{
-		if(mCallback != null)
-		{
-			mCallback.onAction(b, x, y);
-		}
+		return Optional.ofNullable(r);
 	}
 	
 	protected void drawTiles(GraphicsContext gc)

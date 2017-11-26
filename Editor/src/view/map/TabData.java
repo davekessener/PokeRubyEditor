@@ -1,5 +1,7 @@
 package view.map;
 
+import java.util.function.Consumer;
+
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Parent;
@@ -51,9 +53,9 @@ public class TabData implements UI
 		}
 	}
 	
-	public void setOnNameChange(EnterableTextField.Callback cb) { mNameField.setCallback(cb); }
-	public void setOnTilemapIDChange(EnterableTextField.Callback cb) { mTilemapField.setCallback(cb); }
-	public void setOnBorderIDChange(EnterableTextField.Callback cb) { mBorderField.setCallback(cb); }
+	public void setOnNameChange(Consumer<String> cb) { mNameField.setCallback(cb); }
+	public void setOnTilemapIDChange(Consumer<String> cb) { mTilemapField.setCallback(cb); }
+	public void setOnBorderIDChange(Consumer<String> cb) { mBorderField.setCallback(cb); }
 	
 	@Override
 	public Parent getNode()

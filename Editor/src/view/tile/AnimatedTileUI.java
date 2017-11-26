@@ -12,9 +12,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lib.EnterableTextField;
+import lib.misc.Vec2;
 import lib.observe.ObservableList;
 import model.Tileset.Type;
-import model.Vec2;
 
 import static javafx.beans.property.ReadOnlyIntegerProperty.readOnlyIntegerProperty;
 

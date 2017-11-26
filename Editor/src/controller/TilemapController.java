@@ -3,9 +3,10 @@ package controller;
 import javafx.scene.Node;
 import lib.IDValidator;
 import lib.Utils;
-import lib.tilemap.MapLayerManager;
+import lib.misc.Vec2;
 import model.Tilemap;
 import model.Tileset;
+import model.layer.MapLayerManager;
 import view.TabbedUI;
 import view.TilesetCanvas;
 import view.tilemap.TabData;
@@ -15,14 +16,14 @@ import view.tilemap.TilesetRenderer;
 
 public class TilemapController extends ContentController
 {
-	private TabbedUI mUI;
-	private Tilemap mTilemap;
-	private Tileset mTileset;
-	private MapLayerManager mLayers;
-	private TilesetRenderer mRenderTileset;
-	private TabMap mTabMap;
-	private TabMeta mTabMeta;
-	private TabData mTabData;
+	private final TabbedUI mUI;
+	private final Tilemap mTilemap;
+	private final Tileset mTileset;
+	private final MapLayerManager mLayers;
+	private final TilesetRenderer mRenderTileset;
+	private final TabMap mTabMap;
+	private final TabMeta mTabMeta;
+	private final TabData mTabData;
 	
 	public TilemapController(String tid, Tilemap tm)
 	{
@@ -38,36 +39,27 @@ public class TilemapController extends ContentController
 		mTabData = new TabData(mTilemap.getTilesetID(), mTilemap.getWidth(), mTilemap.getHeight());
 		
 		mLayers.addObserver(o -> change());
-		mTabMap.setOnClick((x, y, lid, i, tile) -> setTile(lid, i, x, y, tile));
-		mTabMeta.setOnChange((x, y, id) -> setMeta(x, y, id));
+		mTabMap.setOnAction(a -> act(a));
+		mTabMeta.setOnChange((x, y, id) -> setMeta(new Vec2(x, y), id));
 		mTabData.addTilesetValidation(new IDValidator("tileset"));
 		mTabData.setOnDimensionChange((w, h) -> resize(w, h));
 		
 		mUI.addTab("Tilemap", mTabMap).addTab("Meta", mTabMeta).addTab("Data", mTabData);
 	}
 	
-	private void setTile(String lid, int idx, int x, int y, String tile)
+	private void setMeta(Vec2 p, String id)
 	{
-		String t = mLayers.getTile(lid, idx, x, y);
+		String m = mTilemap.getMeta().get(p);
 		
 		act(
-			() -> mLayers.setTile(lid, idx, x, y, tile),
-			() -> mLayers.setTile(lid, idx, x, y, t));
-	}
-	
-	private void setMeta(int x, int y, String id)
-	{
-		String m = mTilemap.getMeta().get(x, y);
-		
-		act(
-			() -> mTilemap.getMeta().set(x, y, id),
-			() -> mTilemap.getMeta().set(x, y, m));
+			() -> mTilemap.getMeta().set(p, id),
+			() -> mTilemap.getMeta().set(p, m));
 	}
 	
 	private void resize(int w, int h)
 	{
 		// TODO proper undo support
-		mLayers.resize(w, h);
+		mLayers.resizeAll(new Vec2(w, h));
 		mTabMeta.refreshMap(mTilemap.getMeta());
 		change();
 	}
@@ -83,7 +75,7 @@ public class TilemapController extends ContentController
 	{
 		super.change();
 		
-		mTabMap.redraw();
-		mTabMeta.redraw();
+		mTabMap.draw();
+		mTabMeta.draw();
 	}
 }

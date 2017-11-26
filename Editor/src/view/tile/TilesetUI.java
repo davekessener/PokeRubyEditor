@@ -1,9 +1,12 @@
 package view.tile;
 
+import java.util.function.Consumer;
+
 import controller.EditorController;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
@@ -20,7 +23,7 @@ public class TilesetUI implements UI
 	private TiledImageView mTilesetSource;
 	private TilesetView mTilesetView;
 	private Runnable mOnAddTiles;
-	private TilesetView.Callback mOnSelectTile;
+	private Consumer<String> mOnSelectTile;
 	
 	public TilesetUI(Image src, int ts, ObservableMap<String, Tile> tiles)
 	{
@@ -32,6 +35,8 @@ public class TilesetUI implements UI
 		GridPane gp = new GridPane();
 		ScrollPane sp = new ScrollPane();
 		sp.setContent(mTilesetView);
+		sp.prefWidthProperty().bind(mTilesetView.widthProperty().add(16));
+		sp.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		gp.addColumn(0, addBtn, sp);
 		GridPane.setHgrow(addBtn, Priority.ALWAYS);
 		GridPane.setVgrow(sp, Priority.ALWAYS);
@@ -52,13 +57,13 @@ public class TilesetUI implements UI
 		tiles.addObserver(o -> redraw());
 	}
 
-	public void setOnSelect(TilesetView.Callback cb) { mOnSelectTile = cb; }
+	public void setOnSelect(Consumer<String> cb) { mOnSelectTile = cb; }
 	public void setOnAddTiles(Runnable r) { mOnAddTiles = r; }
 	
 	public void redraw()
 	{
 		mTilesetSource.draw();
-		mTilesetView.redraw();
+		mTilesetView.draw();
 	}
 	
 	public void clearEditor()
@@ -84,7 +89,7 @@ public class TilesetUI implements UI
 	{
 		if(mOnSelectTile != null)
 		{
-			mOnSelectTile.onSelect(id);
+			mOnSelectTile.accept(id);
 		}
 	}
 	

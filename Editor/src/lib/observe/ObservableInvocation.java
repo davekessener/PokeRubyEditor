@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 import lib.observe.IInvocationCollection.Filter;
 
-public class ObservableInvocation extends Observable implements InvocationHandler
+public class ObservableInvocation extends BasicObservable implements InvocationHandler
 {
 	private final InvocationHandler mImplementation;
 	private final Filter mChangeDetector;
@@ -21,7 +21,7 @@ public class ObservableInvocation extends Observable implements InvocationHandle
 	{
 		Object r = null;
 		
-		if(m.getDeclaringClass().isAssignableFrom(IObservable.class))
+		if(m.getDeclaringClass().isAssignableFrom(Observable.class))
 		{
 			r = m.invoke(this, a);
 		}

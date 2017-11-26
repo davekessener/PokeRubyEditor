@@ -1,9 +1,11 @@
-package model;
+package lib.misc;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonValue;
 
-public class Vec2 implements JsonModel
+import model.JsonModel;
+
+public class Vec2 implements JsonModel, Cloneable
 {
 	private int dx, dy;
 	
@@ -13,13 +15,17 @@ public class Vec2 implements JsonModel
 		this.dy = dy;
 	}
 	
+	@Override
+	public Vec2 clone()
+	{
+		return new Vec2(dx, dy);
+	}
+	
 	public int getX() { return dx; }
 	public int getY() { return dy; }
 	
-	public void setX(int dx) { this.dx = dx; }
-	public void setY(int dy) { this.dy = dy; }
-	
 	public Vec2 add(Vec2 p) { return new Vec2(dx + p.dx, dy + p.dy); }
+	public Vec2 sub(Vec2 p) { return new Vec2(dx - p.dx, dy - p.dy); }
 
 	@Override
 	public void load(JsonValue value)
@@ -51,4 +57,6 @@ public class Vec2 implements JsonModel
 	{
 		return (o != null && o instanceof Vec2) ? (((Vec2) o).dx == dx && ((Vec2) o).dy == dy) : false;
 	}
+	
+	public static final Vec2 ORIGIN = new Vec2(0, 0);
 }

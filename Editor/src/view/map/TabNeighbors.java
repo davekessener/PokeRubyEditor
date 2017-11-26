@@ -17,13 +17,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import lib.EnterableTextField;
 import lib.EnterableTextField.EmptyAcceptor;
+import lib.misc.Vec2;
 import lib.IDValidator;
 import lib.Utils;
 import model.Direction;
 import model.Map.Neighbor;
 import model.Tilemap;
 import model.Tileset;
-import model.Vec2;
 import view.UI;
 
 public class TabNeighbors implements UI
@@ -192,12 +192,11 @@ public class TabNeighbors implements UI
 			
 			for(Vec2 v : mCoords.values())
 			{
-				if(v.getX() < o.getX()) o.setX(v.getX());
-				if(v.getY() < o.getY()) o.setY(v.getY());
+				if(v.getX() < o.getX()) o = new Vec2(v.getX(), o.getY());
+				if(v.getY() < o.getY()) o = new Vec2(o.getX(), v.getY());
 			}
 			
-			o.setX(-o.getX());
-			o.setY(-o.getY());
+			o = new Vec2(-o.getX(), -o.getY());
 			
 			for(String k : mCoords.keySet())
 			{

@@ -1,10 +1,10 @@
 package view.map;
 
 import lib.Utils;
-import lib.tilemap.MapLayerManager;
 import model.Map;
 import model.Tilemap;
 import model.Tileset;
+import model.layer.MapWrapper;
 import view.TilesetCanvas;
 import view.tilemap.TilesetRenderer;
 
@@ -16,7 +16,7 @@ public class Preview extends TilesetCanvas
 	
 	public Preview(String id, Tilemap map, Tileset ts)
 	{
-		super(new MapLayerManager(map), ts.getSize(), new TilesetRenderer(ts));
+		super(new MapWrapper(map), ts.getSize(), new TilesetRenderer(ts));
 		
 		mID = id;
 		mTilemap = map;

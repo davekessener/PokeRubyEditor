@@ -2,6 +2,7 @@ package controller.map;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import controller.ContentController;
 import controller.ModalDialog;
@@ -9,17 +10,23 @@ import javafx.scene.Node;
 import lib.Utils;
 import lib.observe.ObservableList;
 import lib.observe.ObservableStore;
+import lib.action.Action;
+import lib.misc.Vec2;
 import model.Direction;
 import model.Event;
 import model.Map.Neighbor;
 import model.Tilemap;
 import view.TabbedUI;
+import view.map.EventCanvas;
 import view.map.Preview;
 import view.map.PreviewManager;
 import view.map.TabData;
 import view.map.TabEvents;
 import view.map.TabNeighbors;
 import view.map.create.NewEventUI;
+
+import static lib.Utils.ReversableAction;
+import static lib.Utils.Append;
 
 public class MapController extends ContentController
 {
@@ -47,23 +54,63 @@ public class MapController extends ContentController
 		mWidth = tm.getWidth();
 		mHeight = tm.getHeight();
 		
-		mTabData = new TabData(mMap.getName(), mMap.getTilemapID(), mMap.getBorderID());
-		mTabNeighbors = new TabNeighbors(mMapID, mPreviews, mMap.getNeighbors());
-		mTabEvents = new TabEvents(createIDView(), Preview.Create(mMapID));
+		mTabData = initDataTab();
+		mTabNeighbors = initNeighborsTab();
+		mTabEvents = initEventsTab();
 		
-		mTabData.setOnNameChange(name -> { mMap.setName(name); change(); });
-		mTabData.setOnTilemapIDChange(tid -> { mMap.setTilemapID(tid); change(); });
-		mTabData.setOnBorderIDChange(tid -> { mMap.setBorderID(tid); change(); });
+		mEvents.addObserver(o -> refreshEventView());
 		
-		mTabNeighbors.setOnNeighborChange((d, mid, o) -> setNeighbor(d, mid, o));
-		
-		mTabEvents.setOnAdd(() -> createNewEvent().ifPresent(e -> addEvent(e)));
-		mTabEvents.setOnDelete(eid -> deleteEvent(eid));
-		mTabEvents.setOnSelectEvent(eid -> selectEvent(eid));
-		
-		mEvents.addObserver(o -> mTabEvents.clearSelection());
+		refreshEventView();
 		
 		mUI.addTab("Data", mTabData).addTab("Events", mTabEvents).addTab("Neighbors", mTabNeighbors);
+	}
+	
+	private TabData initDataTab()
+	{
+		return Utils.with(new TabData(mMap.getName(), mMap.getTilemapID(), mMap.getBorderID()), tab -> {
+			tab.setOnNameChange(name -> { mMap.setName(name); change(); });
+			tab.setOnTilemapIDChange(tid -> { mMap.setTilemapID(tid); change(); });
+			tab.setOnBorderIDChange(tid -> { mMap.setBorderID(tid); change(); });
+		});
+	}
+	
+	private TabNeighbors initNeighborsTab()
+	{
+		return Utils.with(new TabNeighbors(mMapID, mPreviews, mMap.getNeighbors()), tab -> {
+			tab.setOnNeighborChange((d, mid, o) -> setNeighbor(d, mid, o));
+		});
+	}
+	
+	private TabEvents initEventsTab()
+	{
+		return Utils.with(new TabEvents(createIDView(), Preview.Create(mMapID)), tab -> {
+			tab.setOnAdd(() -> createNewEvent().ifPresent(e -> addEvent(e)));
+			tab.setOnDelete(eid -> deleteEvent(eid));
+			tab.setOnSelectEvent(eid -> selectEvent(eid));
+			
+			tab.getEventView().setOnDrag(id -> tab.selectEvent(id));
+			tab.getEventView().setOnDrop(p -> moveCurrentEvent(p));
+		});
+	}
+	
+	private void refreshEventView()
+	{
+		EventCanvas view = mTabEvents.getEventView();
+		
+		mTabEvents.clearSelection();
+		
+		view.clear();
+		mEvents.stream().forEach(e -> view.add(e));
+	}
+	
+	private void moveCurrentEvent(Vec2 p)
+	{
+		getEvent(mTabEvents.getSelectedEvent()).ifPresent(event -> {
+			if(!event.getLocation().equals(p) && !mEvents.stream().anyMatch(e -> e.getLocation().equals(p)))
+			{
+				act(Append(ReversableAction(event, "Location", p), () -> mTabEvents.selectEvent(event.getID())));
+			}
+		});
 	}
 	
 	private void setNeighbor(Direction d, String id, int o)
@@ -104,8 +151,18 @@ public class MapController extends ContentController
 	{
 		getEvent(id).ifPresent(e ->
 		{
-			EventController ec = new EventController(mWidth, mHeight, e.getID(), e.getLocation(), e.getArgument());
-			mTabEvents.setEventView(ec.getUI());
+			Consumer<Action> handler = a -> {
+				act(Utils.Append(a, () -> {
+					mEvents.change();
+					mTabEvents.selectEvent(e.getID());
+				}));
+			};
+			
+			EventController ec = new EventController(handler, mWidth, mHeight, e);
+			
+			mTabEvents.setEventView(ec.getUI().getNode());
+			mTabEvents.getEventView().add(e);
+			mTabEvents.getEventView().setSelected(e.getLocation());
 		});
 	}
 	

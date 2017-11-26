@@ -3,6 +3,8 @@ package model;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
+import lib.misc.Vec2;
+
 public abstract class Entity implements JsonModel
 {
 	private String sID;

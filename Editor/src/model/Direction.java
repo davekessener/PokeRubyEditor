@@ -1,5 +1,7 @@
 package model;
 
+import lib.misc.Vec2;
+
 public enum Direction
 {
 	LEFT("left", new Vec2(-1, 0)),

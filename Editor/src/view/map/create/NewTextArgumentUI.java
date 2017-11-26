@@ -29,7 +29,7 @@ public class NewTextArgumentUI extends NewArgumentUI
 		mRoot.addRow(0, new Label("Text ID"), mText);
 		GridPane.setHgrow(mText, Priority.ALWAYS);
 	}
-
+	
 	@Override
 	public Parent getNode()
 	{

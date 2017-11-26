@@ -7,9 +7,9 @@ import java.util.Map;
 import controller.EditorController;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import lib.misc.Vec2;
 import model.Loader;
 import model.Tileset.Tile;
-import model.Vec2;
 import view.RenderUtils;
 import view.TilesetCanvas.TileRenderer;
 

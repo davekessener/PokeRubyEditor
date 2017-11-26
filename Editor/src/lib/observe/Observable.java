@@ -1,37 +1,43 @@
 package lib.observe;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.lang.reflect.Proxy;
 
-public abstract class Observable implements IObservable
+public interface Observable
 {
-	private Set<Observer> mObservers = new HashSet<>();
-	private boolean mSuspended = false;
-	
-	@Override
-	public void addObserver(Observer o)
-	{
-		mObservers.add(o);
-	}
+	public abstract void addObserver(Observer o);
+	public abstract void deleteObserver(Observer o);
+	public abstract void change();
 
-	@Override
-	public void deleteObserver(Observer o)
+	
+	@SuppressWarnings("unchecked")
+	public static <T> T MakeObservable(Object o, Class<T> c)
 	{
-		mObservers.remove(o);
+		if(o instanceof Observable)
+		{
+			return (T) o;
+		}
+		else
+		{
+			return (T) Proxy.newProxyInstance(
+				c.getClassLoader(),
+				new Class<?>[] { c, Observable.class },
+				new ObservableInvocation(new BindingInvocation(
+						(new InvocationCollection()).addInvocation(
+								IInvocationCollection.ClassCastFilter(c),
+								IInvocationCollection.DeferredInvocation(o))),
+						IInvocationCollection.ACCEPT_ALL));
+		}
 	}
 	
-	protected void change()
+	public static void AddObserver(Object p, Observer o)
 	{
-		if(!mSuspended)
+		if(p instanceof Observable)
 		{
-			mSuspended = true;
-			
-			for(Observer o : mObservers)
-			{
-				o.onChange(this);
-			}
-			
-			mSuspended = false;
+			((Observable) p).addObserver(o);
+		}
+		else
+		{
+			((BasicObservable) Proxy.getInvocationHandler(p)).addObserver(o);
 		}
 	}
 }

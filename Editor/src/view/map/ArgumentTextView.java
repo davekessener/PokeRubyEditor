@@ -7,39 +7,34 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import lib.EnterableTextField;
+import lib.Utils;
+import lib.action.Action;
+import model.Event.Argument;
+import model.Event.TextArgument;
 
 public class ArgumentTextView extends ArgumentView
 {
 	private final GridPane mRoot;
-	private Consumer<String> mOnChange;
+	private final TextArgument mArgument;
 	
-	public ArgumentTextView(String v)
+	public ArgumentTextView(Consumer<Action> onchange, Argument a)
 	{
-		super("text");
+		super(a.getType().toString(), onchange);
 		
 		mRoot = new GridPane();
+		mArgument = (TextArgument) a;
 		
-		EnterableTextField tf = new EnterableTextField(v);
+		EnterableTextField tf = new EnterableTextField(mArgument.getText());
 		
 		tf.addValidations(EnterableTextField.IS_NOT_EMPTY);
 		
-		tf.setCallback(s -> onChange(s));
+		tf.setCallback(s -> act(Utils.ReversableAction(mArgument, "Text", s)));
 		
 		mRoot.addRow(0, new Label("Text ID"), tf);
 		mRoot.setHgap(5D);
 		GridPane.setHgrow(tf, Priority.ALWAYS);
 	}
 	
-	public void setOnChange(Consumer<String> cb) { mOnChange = cb; }
-	
-	private void onChange(String s)
-	{
-		if(mOnChange != null)
-		{
-			mOnChange.accept(s);
-		}
-	}
-
 	@Override
 	public Parent getNode()
 	{

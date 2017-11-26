@@ -1,6 +1,7 @@
 package view.tile;
 
-import model.Vec2;
+import lib.misc.Vec2;
+import lib.mouse.SimpleMouseHandler;
 
 public abstract class BasicTileUI implements TileUI
 {
@@ -18,7 +19,7 @@ public abstract class BasicTileUI implements TileUI
 	{
 		mTileset = tileset;
 		
-		mTileset.setOnTileActivated((b, x, y) -> onSelect(new Vec2(x, y)));
+		mTileset.setMouseHandler(new SimpleMouseHandler((e, p) -> onSelect(p)));
 		
 		onBind();
 	}

@@ -1,9 +1,9 @@
 package controller.tile;
 
 import controller.tile.TileController.TileWriter;
+import lib.misc.Vec2;
 import lib.observe.ObservableList;
 import model.Tileset.AnimatedTile;
-import model.Vec2;
 import view.tile.AnimatedTileUI;
 import view.tile.TileUI;
 

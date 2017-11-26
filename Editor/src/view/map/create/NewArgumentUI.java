@@ -3,7 +3,7 @@ package view.map.create;
 import java.util.HashMap;
 import java.util.Map;
 
-import lib.Producer;
+import lib.misc.Producer;
 import model.Event.Argument;
 import view.DialogUI;
 
@@ -21,5 +21,7 @@ public abstract class NewArgumentUI implements DialogUI
 	static
 	{
 		TABLE.put("text", () -> new NewTextArgumentUI());
+		TABLE.put("npc", () -> new NewNPCArgumentUI());
+		TABLE.put("warp", () -> new NewWarpArgumentUI());
 	}
 }

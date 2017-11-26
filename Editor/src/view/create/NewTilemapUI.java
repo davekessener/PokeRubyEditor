@@ -4,8 +4,9 @@ import com.eclipsesource.json.JsonValue;
 
 import lib.EnterableTextField;
 import lib.IDValidator;
-import model.Layer;
+import lib.misc.Vec2;
 import model.Tilemap;
+import model.layer.BasicLayer;
 
 public class NewTilemapUI extends BasicNewUI
 {
@@ -23,7 +24,7 @@ public class NewTilemapUI extends BasicNewUI
 		Tilemap map = new Tilemap();
 		int w = Integer.parseInt(getField("width"));
 		int h = Integer.parseInt(getField("height"));
-		Layer meta = new Layer(w, h);
+		BasicLayer meta = new BasicLayer(new Vec2(w, h));
 		
 		meta.fill(getField("meta"));
 		

@@ -29,6 +29,11 @@ public abstract class ContentController implements Controller
 		return mModel.save();
 	}
 
+	protected void act(Action a)
+	{
+		act(() -> a.redo(), () -> a.undo());
+	}
+	
 	protected void act(Runnable redo, Runnable undo)
 	{
 		Action a = new ContentAction(this, undo, redo);

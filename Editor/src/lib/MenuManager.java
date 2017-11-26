@@ -1,6 +1,7 @@
 package lib;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javafx.beans.property.Property;
 
@@ -11,6 +12,4 @@ public interface MenuManager
 	public abstract void setRange(String id, Consumer<String> c, Set<String> opts);
 	public abstract void setStatus(String v);
 	public abstract void setStatus(Property<String> s);
-	
-	public static interface Consumer<T> { public abstract void consume(T e); }
 }

@@ -5,9 +5,9 @@ import com.eclipsesource.json.JsonValue;
 import controller.EditorController;
 import lib.EnterableTextField;
 import lib.EnterableTextField.FileValidator;
+import lib.misc.Vec2;
 import model.Tileset;
 import model.Tileset.StaticTile;
-import model.Vec2;
 
 public class NewTilesetUI extends BasicNewUI
 {

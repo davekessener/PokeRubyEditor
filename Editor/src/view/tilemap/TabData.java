@@ -1,5 +1,7 @@
 package view.tilemap;
 
+import java.util.function.Consumer;
+
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -49,7 +51,7 @@ public class TabData implements UI
 	}
 	
 	public void addTilesetValidation(EnterableTextField.Validator v) { mTileset.addValidations(v); }
-	public void setOnTilesetChange(EnterableTextField.Callback cb) { mTileset.setCallback(cb); }
+	public void setOnTilesetChange(Consumer<String> cb) { mTileset.setCallback(cb); }
 	
 	public void setOnDimensionChange(DimCallback cb)
 	{

@@ -3,6 +3,7 @@ package view.map;
 import java.util.function.Consumer;
 
 import controller.EditorController;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -21,6 +22,7 @@ public class TabEvents implements UI
 	private final Preview mPreview;
 	private final Store<String> mEvents;
 	private final ComboBox<String> mEventSelector;
+	private final EventCanvas mOverview;
 	private Runnable mOnAdd;
 	private Consumer<String> mOnDelete;
 	private Consumer<String> mOnSelectEvent;
@@ -29,13 +31,14 @@ public class TabEvents implements UI
 	{
 		mRoot = new BorderPane();
 		mEventView = new BorderPane();
+		mOverview = new EventCanvas(preview.getMapWidth(), preview.getMapHeight(), preview.getTileSize());
 		mPreview = preview;
 		mEvents = events;
 		
 		mPreview.drawGridProperty().bind(EditorController.Instance.getOptions().drawGridProperty());
 		
 		StackPane st = new StackPane();
-		st.getChildren().add(mPreview);
+		st.getChildren().addAll(mPreview, mOverview);
 		
 		ScrollPane sc = new ScrollPane();
 		sc.setContent(st);
@@ -71,7 +74,7 @@ public class TabEvents implements UI
 		
 		mRoot.setRight(sc);
 		
-		EditorController.Instance.getMenuManager().setStatus(mPreview.mousedOverTileProperty());
+		mPreview.mousedOverTileProperty().addListener((ob, o, n) -> EditorController.Instance.getMenuManager().setStatus(n == null ? "" : n.toString()));
 		
 		addBtn.setOnAction(e -> addEvent());
 		delBtn.setOnAction(e -> deleteEvent(mEventSelector.getSelectionModel().getSelectedIndex()));
@@ -86,6 +89,8 @@ public class TabEvents implements UI
 	public void setOnDelete(Consumer<String> cb) { mOnDelete = cb; }
 	public void setOnSelectEvent(Consumer<String> cb) { mOnSelectEvent = cb; }
 	
+	public EventCanvas getEventView() { return mOverview; }
+	
 	public void clearSelection()
 	{
 		mEventSelector.getSelectionModel().select(-1);
@@ -98,9 +103,14 @@ public class TabEvents implements UI
 		onSelectEvent(id);
 	}
 	
-	public void setEventView(EventView ev)
+	public String getSelectedEvent()
 	{
-		mEventView.setCenter(ev.getNode());
+		return mEventSelector.getSelectionModel().getSelectedItem();
+	}
+	
+	public void setEventView(Node ev)
+	{
+		mEventView.setCenter(ev);
 	}
 	
 	private void onSelectEvent(String id)

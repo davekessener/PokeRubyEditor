@@ -10,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import view.BasicDialogUI;
 import view.DialogUI;
 
 public class ModalDialog extends Stage
@@ -24,6 +25,11 @@ public class ModalDialog extends Stage
 		
 		this.setTitle(title);
 		this.initModality(Modality.APPLICATION_MODAL);
+		
+		if(mUI instanceof BasicDialogUI)
+		{
+			((BasicDialogUI) mUI).setStage(this);
+		}
 		
 		Node ui = mUI.getNode();
 		

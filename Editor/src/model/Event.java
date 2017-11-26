@@ -1,10 +1,12 @@
 package model;
 
-import java.util.HashMap;
+import java.util.Arrays;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+
+import lib.misc.Vec2;
 
 public class Event implements JsonModel
 {
@@ -34,7 +36,7 @@ public class Event implements JsonModel
 		
 		try
 		{
-			mArgument = ARGUMENTS.get(tag.getString("type", null)).newInstance();
+			mArgument = Type.valueOf(tag.getString("type", null).toUpperCase()).represent().newInstance();
 		}
 		catch (InstantiationException | IllegalAccessException e)
 		{
@@ -51,17 +53,36 @@ public class Event implements JsonModel
 		
 		tag.add("id", mID);
 		tag.add("at", mLocation.save());
-		tag.add("type", mArgument.getType());
+		tag.add("type", mArgument.getType().toString());
 		tag.add("argument", mArgument.save());
 		
 		return tag;
 	}
 	
-	public static final java.util.Map<String, Class<? extends Argument>> ARGUMENTS = new HashMap<>();
+	public static enum Type
+	{
+		TEXT,
+		WARP,
+		NPC;
+		
+		@SuppressWarnings("unchecked")
+		public final Class<? extends Argument> represent()
+		{
+			return (Class<? extends Argument>) Arrays.stream(Event.class.getDeclaredClasses()).filter(
+					c -> c.getSimpleName().equalsIgnoreCase(this.toString() + "Argument")
+					     && Argument.class.isAssignableFrom(c)).findAny().get();
+		}
+		
+		@Override
+		public String toString()
+		{
+			return this.name().toLowerCase();
+		}
+	}
 	
 	public static abstract class Argument implements JsonModel
 	{
-		public abstract String getType();
+		public abstract Type getType();
 	}
 	
 	public static class TextArgument extends Argument
@@ -84,9 +105,9 @@ public class Event implements JsonModel
 		}
 
 		@Override
-		public String getType()
+		public Type getType()
 		{
-			return "text";
+			return Type.TEXT;
 		}
 	}
 	
@@ -94,6 +115,11 @@ public class Event implements JsonModel
 	{
 		private String mMap;
 		private String mTarget;
+		
+		public String getMapID() { return mMap; }
+		public String getTargetID() { return mTarget; }
+		public void setMapID(String id) { mMap = id; }
+		public void setTargetID(String id) { mTarget = id; }
 		
 		@Override
 		public void load(JsonValue value)
@@ -116,9 +142,9 @@ public class Event implements JsonModel
 		}
 		
 		@Override
-		public String getType()
+		public Type getType()
 		{
-			return "warp";
+			return Type.WARP;
 		}
 	}
 	
@@ -127,6 +153,13 @@ public class Event implements JsonModel
 		private String mSprite;
 		private String mText;
 		private String mAI;
+		
+		public String getSpriteID() { return mSprite; }
+		public String getTextID() { return mText; }
+		public String getAI() { return mAI; }
+		public void setSpriteID(String id) { mSprite = id; }
+		public void setTextID(String id) { mText = id; }
+		public void setAI(String ai) { mAI = ai; }
 		
 		@Override
 		public void load(JsonValue value)
@@ -151,16 +184,9 @@ public class Event implements JsonModel
 		}
 		
 		@Override
-		public String getType()
+		public Type getType()
 		{
-			return "npc";
+			return Type.NPC;
 		}
-	}
-	
-	static
-	{
-		ARGUMENTS.put("text", TextArgument.class);
-		ARGUMENTS.put("warp", WarpArgument.class);
-		ARGUMENTS.put("npc", NPCArgument.class);
 	}
 }
