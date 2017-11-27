@@ -1,8 +1,9 @@
 package model.layer;
 
 import lib.misc.Vec2;
+import lib.observe.BasicObservable;
 
-public class BasicLayer implements Layer
+public class BasicLayer extends BasicObservable implements Layer
 {
 	private int mWidth, mHeight;
 	private String[][] mData;
@@ -29,6 +30,8 @@ public class BasicLayer implements Layer
 				mData[x][y] = v;
 			}
 		}
+		
+		change();
 	}
 	
 	@Override
@@ -51,6 +54,8 @@ public class BasicLayer implements Layer
 		mWidth = w;
 		mHeight = h;
 		mData = d;
+		
+		change();
 	}
 	
 	@Override
@@ -68,5 +73,7 @@ public class BasicLayer implements Layer
 	public void set(Vec2 p, String v)
 	{
 		mData[p.getX()][p.getY()] = v;
+		
+		change();
 	}
 }

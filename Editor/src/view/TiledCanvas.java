@@ -10,10 +10,11 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import lib.misc.Vec2;
 import lib.mouse.MouseHandler;
 
-public abstract class TiledCanvas extends Canvas
+public abstract class TiledCanvas extends Canvas implements CachedUI
 {
 	private int mTileSize;
 	private int mWidth, mHeight;
@@ -22,6 +23,7 @@ public abstract class TiledCanvas extends Canvas
 	private Property<Boolean> mDrawGrid;
 	private Property<Vec2> mMouseOverTile;
 	private MouseHandler mMouseCallback;
+	private boolean mDirty;
 	
 	public TiledCanvas(int w, int h, int ts)
 	{
@@ -32,6 +34,7 @@ public abstract class TiledCanvas extends Canvas
 		mDrawGrid = new SimpleBooleanProperty(false);
 		mMouseOverTile = new SimpleObjectProperty<Vec2>();
 		mTrueClear = false;
+		mDirty = false;
 		
 		mDrawGrid.addListener((ob, o, n) -> draw());
 		
@@ -39,6 +42,8 @@ public abstract class TiledCanvas extends Canvas
 		this.setOnMouseDragged(e -> mouseDrag(e));
 		this.setOnMouseReleased(e -> mouseReleased(e));
 		this.setOnMouseMoved(e -> mouseOver(e));
+		
+		draw();
 	}
 	
 	protected int getTileSize() { return mTileSize; }
@@ -64,7 +69,24 @@ public abstract class TiledCanvas extends Canvas
 		super.setHeight(mHeight * mTileSize);
 	}
 	
-	public void draw()
+	public final void draw()
+	{
+		if(!mDirty)
+		{
+			mDirty = true;
+			
+			CacheUtils.ScheduleRenderIn(Duration.millis(5), this);
+		}
+	}
+	
+	@Override
+	public boolean isDirty()
+	{
+		return mDirty;
+	}
+	
+	@Override
+	public void render()
 	{
 		GraphicsContext gc = this.getGraphicsContext2D();
 		
@@ -89,6 +111,8 @@ public abstract class TiledCanvas extends Canvas
 		{
 			RenderUtils.RenderBox(gc, mSelected, mTileSize, mDrawGrid.getValue());
 		}
+		
+		mDirty = false;
 	}
 	
 	protected void drawGrid(GraphicsContext gc)

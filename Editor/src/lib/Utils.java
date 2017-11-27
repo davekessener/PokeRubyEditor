@@ -101,7 +101,7 @@ public class Utils
 		final T t = lookup.apply(start);
 		
 		f.impl = p -> {
-			if(!r.contains(p) && !t.equals(lookup.apply(p)))
+			if(!r.contains(p) && t.equals(lookup.apply(p)))
 			{
 				r.add(p);
 				

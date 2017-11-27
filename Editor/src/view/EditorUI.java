@@ -16,9 +16,14 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import lib.MenuManager;
+
+import static lib.Utils.with;
 
 public class EditorUI implements UI, MenuManager
 {
@@ -116,8 +121,8 @@ public class EditorUI implements UI, MenuManager
 		
 		m.getItems().addAll(
 			createMenu("edit:new", "New"),
-			createMenuItem("edit:undo", "Undo"),
-			createMenuItem("edit:redo", "Redo")
+			with(createMenuItem("edit:undo", "Undo"), e -> e.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN))),
+			with(createMenuItem("edit:redo", "Redo"), e -> e.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN)))
 		);
 		
 		return m;

@@ -1,7 +1,7 @@
 package lib.tilemap.selection;
 
 import lib.misc.Vec2;
-import model.layer.LayerManager;
+import model.layer.MapManager;
 
 public class SingleTileSelection implements Selection
 {
@@ -19,8 +19,8 @@ public class SingleTileSelection implements Selection
 	}
 
 	@Override
-	public void apply(LayerManager m, int l, Vec2 p)
+	public void apply(MapManager m, String id, int l, Vec2 p)
 	{
-		m.get(l).set(p, mTile);
+		m.getLayers(id).get(l).set(p, mTile);
 	}
 }

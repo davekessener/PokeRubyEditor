@@ -26,6 +26,8 @@ public class StaticLayerManager extends BasicObservable implements ReadOnlyLayer
 		}
 		
 		mLayers.add(l);
+		
+		change();
 	}
 
 	@Override

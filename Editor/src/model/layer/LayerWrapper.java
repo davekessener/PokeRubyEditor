@@ -3,8 +3,9 @@ package model.layer;
 import java.util.function.Function;
 
 import lib.misc.Vec2;
+import lib.observe.BasicObservable;
 
-public class LayerWrapper implements ReadOnlyLayer
+public class LayerWrapper extends BasicObservable implements ReadOnlyLayer
 {
 	private final int mWidth, mHeight;
 	private final Function<Vec2, String> mLookup;

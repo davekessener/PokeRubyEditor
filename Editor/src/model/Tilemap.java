@@ -11,7 +11,11 @@ import com.eclipsesource.json.JsonValue;
 
 import lib.misc.Rect;
 import lib.misc.Vec2;
+import model.layer.JsonLayer;
 import model.layer.Layer;
+import model.layer.ReadOnlyLayer;
+
+import static lib.Utils.with;
 
 public class Tilemap implements JsonModel
 {
@@ -19,7 +23,7 @@ public class Tilemap implements JsonModel
 	private int iWidth;
 	private int iHeight;
 	private final java.util.Map<String, List<Layer>> mLayers = new HashMap<>();
-	private Layer mMeta;
+	private final JsonLayer mMeta = new JsonLayer();
 	
 	public String getTilesetID() { return sTileset; }
 	public int getWidth() { return iWidth; }
@@ -29,7 +33,6 @@ public class Tilemap implements JsonModel
 	public void setTilesetID(String id) { sTileset = id; }
 	public void setWidth(int w) { iWidth = w; }
 	public void setHeight(int h) { iHeight = h; }
-	public void setMeta(Layer l) { mMeta = l; }
 	
 	public List<Layer> getLayers(String id)
 	{
@@ -41,6 +44,16 @@ public class Tilemap implements JsonModel
 		}
 		
 		return l;
+	}
+	
+	public void setMeta(ReadOnlyLayer l)
+	{
+		mMeta.resize(l.dimension());
+		
+		for(Vec2 p : new Rect(l.dimension()))
+		{
+			mMeta.set(p, l.get(p));
+		}
 	}
 	
 	public void resize(Vec2 v)
@@ -77,6 +90,8 @@ public class Tilemap implements JsonModel
 		iWidth = tag.getInt("width", 0);
 		iHeight = tag.getInt("height", 0);
 		
+		Vec2 s = new Vec2(iWidth, iHeight);
+		
 		mLayers.clear();
 		
 		for(String d : TYPES)
@@ -87,14 +102,15 @@ public class Tilemap implements JsonModel
 				
 				for(JsonValue v : map.get(d).asArray())
 				{
-					ls.add(JsonUtils.LoadLayer(iWidth, iHeight, v));
+					ls.add(with(new JsonLayer(s), l -> l.load(v)));
 				}
 				
 				mLayers.put(d, ls);
 			}
 		}
 		
-		mMeta = JsonUtils.LoadLayer(iWidth, iHeight, tag.get("meta"));
+		mMeta.resize(s);
+		mMeta.load(tag.get("meta"));
 	}
 
 	@Override
@@ -107,13 +123,15 @@ public class Tilemap implements JsonModel
 		tag.add("width", iWidth);
 		tag.add("height", iHeight);
 		
+		Rect r = new Rect(iWidth, iHeight);
+		
 		for(Entry<String, List<Layer>> e : mLayers.entrySet())
 		{
 			JsonArray layer = new JsonArray();
 			
 			for(Layer l : e.getValue())
 			{
-				layer.add(JsonUtils.SaveLayer(l));
+				layer.add(JsonUtils.SaveStringMatrix(r, p -> l.get(p)));
 			}
 			
 			if(!e.getValue().isEmpty())
@@ -123,7 +141,7 @@ public class Tilemap implements JsonModel
 		}
 		
 		tag.add("map", map);
-		tag.add("meta", JsonUtils.SaveLayer(mMeta));
+		tag.add("meta", mMeta.save());
 		
 		return tag;
 	}

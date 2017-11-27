@@ -1,7 +1,9 @@
 package lib.tilemap.selection;
 
 import lib.misc.Vec2;
+import model.Tilemap;
 import model.layer.LayerManager;
+import model.layer.MapManager;
 import model.layer.ReadOnlyLayerManager;
 
 public class MapSelection implements Selection
@@ -20,16 +22,23 @@ public class MapSelection implements Selection
 	}
 
 	@Override
-	public void apply(LayerManager m, int l, Vec2 p)
+	public void apply(MapManager m, String id, int l, Vec2 p)
 	{
 		if(m.size() != mManager.size())
 		{
 			throw new RuntimeException("Invalid layer count!");
 		}
 		
-		for(int i = 0 ; i < mManager.size() ; ++i)
+		int idx = 0;
+		
+		for(String lid : Tilemap.TYPES)
 		{
-			SelectionUtils.applyOnLayer(mManager.get(i), m.get(i), p);
+			LayerManager ll = m.getLayers(lid);
+			
+			for(int i = 0 ; i < ll.size() ; ++i, ++idx)
+			{
+				SelectionUtils.applyOnLayer(mManager.get(idx), ll.get(i), p);
+			}
 		}
 	}
 }

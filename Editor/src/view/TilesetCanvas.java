@@ -30,8 +30,6 @@ public class TilesetCanvas extends TiledCanvas
 		mDrawOverlay.addListener((ob, o, n) -> draw());
 		mDrawUpper.addListener((ob, o, n) -> draw());
 		mMap.addObserver(mManagerObserver);
-		
-		draw();
 	}
 	
 	public Property<Boolean> drawOverlayProperty() { return mDrawOverlay; }
@@ -49,12 +47,12 @@ public class TilesetCanvas extends TiledCanvas
 	}
 	
 	@Override
-	public void draw()
+	public void render()
 	{
 		setWidth(mMap.dimension().getX());
 		setHeight(mMap.dimension().getY());
 		
-		super.draw();
+		super.render();
 	}
 	
 	@Override

@@ -7,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import lib.EnterableTextField;
+import lib.IDValidator;
 import view.UI;
 
 public class TabData implements UI
@@ -29,7 +30,7 @@ public class TabData implements UI
 		
 		mWidth.addValidations(EnterableTextField.IS_POSITIVE_INT);
 		mHeight.addValidations(EnterableTextField.IS_POSITIVE_INT);
-		mTileset.addValidations(EnterableTextField.IS_NOT_EMPTY);
+		mTileset.addValidations(new IDValidator("tileset"));
 
 		lWidth.setAlignment(Pos.CENTER_RIGHT);
 		lHeight.setAlignment(Pos.CENTER_RIGHT);
@@ -50,7 +51,6 @@ public class TabData implements UI
 		mRoot.setVgap(5D);
 	}
 	
-	public void addTilesetValidation(EnterableTextField.Validator v) { mTileset.addValidations(v); }
 	public void setOnTilesetChange(Consumer<String> cb) { mTileset.setCallback(cb); }
 	
 	public void setOnDimensionChange(DimCallback cb)

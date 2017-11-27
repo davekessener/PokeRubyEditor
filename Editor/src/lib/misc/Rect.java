@@ -6,6 +6,7 @@ public class Rect implements Iterable<Vec2>
 {
 	private Vec2 mStart, mStop;
 	
+	public Rect(Vec2 s) { this(Vec2.ORIGIN, s.getX(), s.getY()); }
 	public Rect(int w, int h) { this(Vec2.ORIGIN, w, h); }
 	public Rect(Vec2 v, int w, int h)
 	{

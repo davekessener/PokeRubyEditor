@@ -23,16 +23,20 @@ public abstract class BasicObservable implements Observable
 	@Override
 	public void change()
 	{
-		if(!mSuspended)
+		if(!isSuspended())
 		{
-			mSuspended = true;
+			suspend();
 			
 			for(Observer o : mObservers)
 			{
 				o.onChange(this);
 			}
 			
-			mSuspended = false;
+			resume();
 		}
 	}
+	
+	protected void suspend() { mSuspended = true; }
+	protected void resume() { mSuspended = false; }
+	protected boolean isSuspended() { return mSuspended; }
 }

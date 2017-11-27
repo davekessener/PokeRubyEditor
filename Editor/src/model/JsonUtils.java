@@ -1,12 +1,12 @@
 package model;
 
+import java.util.function.Function;
+
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonValue;
 
+import lib.misc.Rect;
 import lib.misc.Vec2;
-import model.layer.BasicLayer;
-import model.layer.Layer;
-import model.layer.ReadOnlyLayer;
 
 public class JsonUtils
 {
@@ -29,29 +29,28 @@ public class JsonUtils
 		return a;
 	}
 	
-	public static Layer LoadLayer(int w, int h, JsonValue json)
+	public static JsonValue SaveStringMatrix(int w, int h, String[][] s)
 	{
-		return new BasicLayer(new Vec2(w, h), LoadStringMatrix(w, h, json));
+		return SaveStringMatrix(new Rect(w, h), p -> s[p.getX()][p.getY()]);
 	}
 	
-	public static JsonValue SaveLayer(ReadOnlyLayer l)
+	public static JsonValue SaveStringMatrix(Rect r, Function<Vec2, String> f)
 	{
-		JsonArray v = new JsonArray();
-		Vec2 s = l.dimension();
+		JsonArray tag = new JsonArray();
 		
-		for(int y = 0 ; y < s.getY() ; ++y)
+		for(int y : r.Y())
 		{
 			JsonArray row = new JsonArray();
 			
-			for(int x = 0 ; x < s.getX() ; ++x)
+			for(int x : r.X())
 			{
-				row.add(l.get(new Vec2(x, y)));
+				row.add(f.apply(new Vec2(x, y)));
 			}
 			
-			v.add(row);
+			tag.add(row);
 		}
 		
-		return v;
+		return tag;
 	}
 	
 	private JsonUtils() { }

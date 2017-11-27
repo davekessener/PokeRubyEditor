@@ -1,7 +1,5 @@
 package view.tilemap;
 
-import java.util.function.Consumer;
-
 import controller.EditorController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,18 +11,18 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import lib.MemoryConsumer;
 import lib.Utils;
-import lib.action.Action;
-import lib.misc.Producer;
 import lib.misc.Rect;
 import lib.misc.Vec2;
+import lib.mouse.ConditionalWrapper;
+import lib.mouse.FillMouseHandler;
 import lib.mouse.MouseHandlerCollection;
+import lib.mouse.OnReleaseWrapper;
 import lib.mouse.SimpleMouseHandler;
 import lib.tilemap.selection.AreaSelector;
 import lib.tilemap.selection.DrawHandler;
@@ -37,7 +35,7 @@ import model.layer.ReadOnlyLayerManager;
 import model.layer.EmptyLayerManager;
 import model.layer.LayerUtils;
 import model.layer.LayerWrapper;
-import model.layer.MapLayerManager;
+import model.layer.MapManager;
 import model.layer.ReadOnlyLayer;
 import model.layer.StaticLayerManager;
 import view.TilesetCanvas;
@@ -50,17 +48,17 @@ public class TabMap implements UI
 	private final TilesetCanvas mMapCanvas;
 	private final TilesetCanvas mAreaSelection;
 	private final TilesetView mTileset;
-	private final MapLayerManager mManager;
+	private final MapManager mManager;
 	private final ComboBox<String> mLayerType;
 	private final ComboBox<String> mLayer;
 	private final Label mMaxLayerLabel;
 	private final Button mDeleteButton;
+	private final Runnable mSave;
 	private Selection mSelection;
 	private String mCurrentLayerType;
 	private int mLayerIndex;
-	private Consumer<Action> mActionReceiver;
 	
-	public TabMap(Tilemap map, MapLayerManager lm, int ts, TilesetRenderer r)
+	public TabMap(Tilemap map, MapManager lm, int ts, TilesetRenderer r, Runnable save)
 	{
 		mRoot = new BorderPane();
 		mTilemap = map;
@@ -71,6 +69,7 @@ public class TabMap implements UI
 		mManager = lm;
 		mCurrentLayerType = null;
 		mLayerIndex = -1;
+		mSave = save;
 		
 		EditorController editor = EditorController.Instance;
 		
@@ -131,7 +130,7 @@ public class TabMap implements UI
 		
 		mMapCanvas.setMouseHandler((new MouseHandlerCollection())
 				.add(e -> e.getButton().equals(MouseButton.PRIMARY), 
-						new DrawHandlerImpl(() -> getSelectionSize(), new MemoryConsumer<>(p -> drawAt(p))))
+						new OnReleaseWrapper(new DrawHandler(() -> getSelectionSize(), new MemoryConsumer<>(p -> drawAt(p))), () -> mSave.run()))
 				.add(e -> e.getButton().equals(MouseButton.SECONDARY), 
 						(new MouseHandlerCollection())
 					.add(e -> e.isShiftDown() && e.isControlDown(), 
@@ -139,7 +138,12 @@ public class TabMap implements UI
 					.add(e -> e.isControlDown(), 
 							new AreaSelector(new MemoryConsumer<>(t -> selectMapArea(t))))
 					.add(e -> true, 
-							new SimpleMouseHandler((e, p) -> selectSingleTile(mManager.getLayers(mCurrentLayerType).get(mLayerIndex).get(p))))));
+							new SimpleMouseHandler((e, p) -> selectSingleTile(mManager.getLayers(mCurrentLayerType).get(mLayerIndex).get(p)))))
+				.add(e -> e.getButton().equals(MouseButton.MIDDLE),
+						new ConditionalWrapper(new OnReleaseWrapper(
+								new FillMouseHandler(() -> mManager.getLayers(mCurrentLayerType).get(mLayerIndex), p -> drawAt(p)),
+								() -> mSave.run()),
+							() -> ((mSelection instanceof SingleTileSelection) && mLayerIndex >= 0))));
 		
 		mMapCanvas.drawGridProperty().bind(editor.getOptions().drawGridProperty());
 		mMapCanvas.drawOverlayProperty().bind(greyOut.selectedProperty());
@@ -157,25 +161,19 @@ public class TabMap implements UI
 		{
 			if(mTilemap.getLayers(id).size() > 0)
 			{
-				mLayerType.getSelectionModel().select(id);
+				forceSelectLayer(id, 0);
 				break;
 			}
 		}
 		
-		mMapCanvas.draw();
-		mTileset.draw();
+		mManager.addObserver(o -> draw());
 	}
-	
-	public void setOnAction(Consumer<Action> cb) { mActionReceiver = cb; }
 	
 	public Vec2 getSelectionSize() { return mSelection == null ? Vec2.ORIGIN : mSelection.dimension(); }
 	
-	public void drawAt(Vec2 p)
+	private void drawAt(Vec2 p)
 	{
-		if(mSelection != null)
-		{
-			mSelection.apply(mManager, mLayerIndex, p);
-		}
+		mSelection.apply(mManager, mCurrentLayerType, mLayerIndex, p);
 	}
 	
 	private void selectSingleTile(String id)
@@ -224,6 +222,7 @@ public class TabMap implements UI
 			i = mManager.createLayer(mCurrentLayerType, i);
 			reloadLayerBox();
 			mLayer.getSelectionModel().select(i);
+			mSave.run();
 		}
 	}
 	
@@ -232,11 +231,23 @@ public class TabMap implements UI
 		i = mManager.deleteLayer(mCurrentLayerType, i);
 		reloadLayerBox();
 		mLayer.getSelectionModel().select(i);
+		mSave.run();
 	}
 	
 	public void draw()
 	{
 		mMapCanvas.draw();
+		mTileset.draw();
+
+		forceSelectLayer(mCurrentLayerType, mLayerIndex);
+	}
+	
+	private void forceSelectLayer(String id, int idx)
+	{
+		mCurrentLayerType = id == null ? "" : null;
+		mLayerIndex = -1;
+		
+		selectLayer(id, idx);
 	}
 	
 	private void selectLayer(String id, int idx)
@@ -249,6 +260,11 @@ public class TabMap implements UI
 		if(changedLayer)
 		{
 			reloadLayerBox();
+			
+			if(idx < mLayer.getItems().size())
+			{
+				mLayer.getSelectionModel().select(mLayerIndex = idx);
+			}
 		}
 		
 		selectActiveLayer();
@@ -272,8 +288,7 @@ public class TabMap implements UI
 		
 		if(!mLayer.getItems().isEmpty())
 		{
-			mLayer.getSelectionModel().select(0);
-			mLayerIndex = 0;
+			mLayer.getSelectionModel().select(mLayerIndex = 0);
 		}
 		
 		mMaxLayerLabel.setText("/ " + mLayer.getItems().size());
@@ -283,15 +298,5 @@ public class TabMap implements UI
 	public Parent getNode()
 	{
 		return mRoot;
-	}
-	
-	private class DrawHandlerImpl extends DrawHandler
-	{
-		public DrawHandlerImpl(Producer<Vec2> f, Consumer<Vec2> cb) { super(f, cb); }
-
-		@Override
-		public void onReleased(MouseEvent e)
-		{
-		}
 	}
 }

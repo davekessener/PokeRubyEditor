@@ -72,7 +72,7 @@ public class TilesetView extends TiledCanvas
 	}
 	
 	@Override
-	public void draw()
+	public void render()
 	{
 		mTileIDs.clear();
 		mTilePos.clear();
@@ -88,7 +88,7 @@ public class TilesetView extends TiledCanvas
 		
 		super.setHeight((mTiles.keySet().size() + mWidth) / mWidth);
 		
-		super.draw();
+		super.render();
 	}
 	
 	public void selectID(String id)
