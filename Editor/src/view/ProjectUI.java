@@ -73,6 +73,14 @@ public class ProjectUI implements UI
 		{
 			populateBranch(new File(root.getAbsolutePath() + "/data/" + type.getValue()), type);
 		}
+		
+		expandTree(mTreeRoot);
+	}
+	
+	private void expandTree(TreeItem<?> elem)
+	{
+		elem.setExpanded(true);
+		elem.getChildren().forEach(e -> expandTree(e));
 	}
 	
 	private void populateBranch(File path, TreeItem<String> branch)

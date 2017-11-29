@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import controller.EditorController;
 import lib.action.Action;
 import lib.action.BasicAction;
+import lib.misc.Rect;
 import lib.misc.Recursive;
 import lib.misc.Vec2;
 import model.Direction;
@@ -94,14 +96,14 @@ public class Utils
 		};
 	}
 	
-	public static <T> Set<Vec2> findAllAdjacent(Vec2 start, Function<Vec2, T> lookup)
+	public static <T> Set<Vec2> findAllAdjacent(Vec2 start, Rect area, Function<Vec2, T> lookup)
 	{
 		final Recursive<Consumer<Vec2>> f = new Recursive<>();
 		final Set<Vec2> r = new HashSet<>();
 		final T t = lookup.apply(start);
 		
 		f.impl = p -> {
-			if(!r.contains(p) && t.equals(lookup.apply(p)))
+			if(area.contains(p) && !r.contains(p) && Objects.equals(t, lookup.apply(p)))
 			{
 				r.add(p);
 				

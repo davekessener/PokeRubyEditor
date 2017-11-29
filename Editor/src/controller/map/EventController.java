@@ -28,9 +28,8 @@ public class EventController
 	public EventController(Consumer<Action> onchange, int w, int h, Event e)
 	{
 		mEvent = e;
-		mArgUI = instantiateArgumentUI();
-		
 		mOnChange = onchange;
+		mArgUI = instantiateArgumentUI();
 		
 		mUI = new EventView(e.getID(), w, h, e.getLocation(), mArgUI);
 		

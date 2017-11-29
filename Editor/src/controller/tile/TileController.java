@@ -28,7 +28,7 @@ public class TileController
 	{
 		if(t.equals(Type.STATIC))
 		{
-			updateController(new StaticTile(mTile.getID(), mTile.getPosition()));
+			updateController(new StaticTile(mTile.getID(), mTile.getPosition(), ""));
 		}
 		else if(t.equals(Type.ANIMATED))
 		{

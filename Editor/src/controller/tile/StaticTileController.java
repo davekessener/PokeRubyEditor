@@ -16,14 +16,22 @@ public class StaticTileController implements ActualTileController
 	{
 		mTile = t;
 		mWriter = w;
-		mUI = new StaticTileUI(t.getPosition());
+		mUI = new StaticTileUI(t.getPosition(), t.getAnimators());
 		
 		mUI.setOnSelection(p -> setSelection(p));
+		mUI.setOnAnimatorChange(s -> setAnimators(s));
 	}
 	
 	private void setSelection(Vec2 p)
 	{
 		mTile.setPosition(p);
+		
+		mWriter.write(mTile);
+	}
+	
+	private void setAnimators(String s)
+	{
+		mTile.setAnimators(s);
 		
 		mWriter.write(mTile);
 	}

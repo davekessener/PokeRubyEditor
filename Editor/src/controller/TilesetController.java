@@ -33,7 +33,7 @@ public class TilesetController extends ContentController
 	{
 		for(int i = 0, l = mTileset.getTiles().size(), k = 8 - (l + i + 1) % 8 ; i < k ; ++i)
 		{
-			mTileset.addTile(new StaticTile(Format(l + i), new Vec2(0, 0)));
+			mTileset.addTile(new StaticTile(Format(l + i), new Vec2(0, 0), ""));
 		}
 	}
 	

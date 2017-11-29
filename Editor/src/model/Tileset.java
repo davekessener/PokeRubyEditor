@@ -97,11 +97,13 @@ public class Tileset implements JsonModel
 	public static class StaticTile extends Tile
 	{
 		private Vec2 vPosition;
+		private String mAnimators;
 		
-		public StaticTile(String id, Vec2 p)
+		public StaticTile(String id, Vec2 p, String a)
 		{
 			setID(id);
 			setPosition(p);
+			setAnimators(a);
 		}
 		
 		public StaticTile()
@@ -126,18 +128,33 @@ public class Tileset implements JsonModel
 			vPosition = p;
 		}
 		
+		public String getAnimators() { return mAnimators; }
+		public void setAnimators(String id) { mAnimators = id == null ? "" : id; }
+		
 		@Override
 		public void load(JsonValue value)
 		{
 			super.load(value);
 			
-			vPosition.load(value.asObject().get("at"));
+			JsonObject tag = value.asObject();
+			
+			vPosition.load(tag.get("at"));
+			mAnimators = tag.getString("animation", "");
 		}
 		
 		@Override
 		public JsonValue save()
 		{
-			return super.save().asObject().add("at", vPosition.save());
+			JsonObject tag = super.save().asObject();
+			
+			tag.add("at", vPosition.save());
+			
+			if(!mAnimators.isEmpty())
+			{
+				tag.add("animation", mAnimators);
+			}
+			
+			return tag;
 		}
 	}
 	

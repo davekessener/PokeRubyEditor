@@ -1,7 +1,6 @@
 package lib.mouse;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import lib.Utils;
 import lib.misc.Producer;
@@ -19,9 +18,7 @@ public class FillMouseHandler extends SingleMouseHandler
 	private static void Fill(Vec2 p, Producer<ReadOnlyLayer> lf, Consumer<Vec2> f)
 	{
 		ReadOnlyLayer l = lf.produce();
-		Rect r = new Rect(l.dimension());
-		Function<Vec2, String> get = v -> r.contains(v) ? l.get(v) : null;
 		
-		Utils.findAllAdjacent(p, get).forEach(v -> f.accept(v));
+		Utils.findAllAdjacent(p, new Rect(l.dimension()), v -> l.get(v)).forEach(v -> f.accept(v));
 	}
 }

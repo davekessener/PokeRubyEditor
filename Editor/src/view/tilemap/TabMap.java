@@ -261,7 +261,7 @@ public class TabMap implements UI
 		{
 			reloadLayerBox();
 			
-			if(idx < mLayer.getItems().size())
+			if(idx >= 0 && idx < mLayer.getItems().size())
 			{
 				mLayer.getSelectionModel().select(mLayerIndex = idx);
 			}

@@ -115,11 +115,14 @@ public class Event implements JsonModel
 	{
 		private String mMap;
 		private String mTarget;
+		private String mDirection;
 		
 		public String getMapID() { return mMap; }
 		public String getTargetID() { return mTarget; }
+		public String getDirection() { return mDirection; }
 		public void setMapID(String id) { mMap = id; }
 		public void setTargetID(String id) { mTarget = id; }
+		public void setDirection(String d) { mDirection = d; }
 		
 		@Override
 		public void load(JsonValue value)
@@ -128,6 +131,7 @@ public class Event implements JsonModel
 			
 			mMap = tag.getString("map", null);
 			mTarget = tag.getString("target", null);
+			mDirection = tag.getString("direction", "any");
 		}
 
 		@Override
@@ -137,6 +141,7 @@ public class Event implements JsonModel
 			
 			tag.add("map", mMap);
 			tag.add("target", mTarget);
+			tag.add("direction", mDirection);
 			
 			return tag;
 		}
@@ -145,6 +150,16 @@ public class Event implements JsonModel
 		public Type getType()
 		{
 			return Type.WARP;
+		}
+		
+		public static enum Direction
+		{
+			UP,
+			DOWN,
+			LEFT,
+			RIGHT,
+			ANY,
+			NONE
 		}
 	}
 	

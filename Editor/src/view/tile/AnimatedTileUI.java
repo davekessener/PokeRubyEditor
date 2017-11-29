@@ -1,6 +1,7 @@
 package view.tile;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -23,8 +24,8 @@ public class AnimatedTileUI extends BasicTileUI
 	private final HBox mRoot;
 	private List<Vec2> mFrames;
 	private TextField mCurrentFrame;
-	private Callback<Integer> mOnAddFrame, mOnRemoveFrame;
-	private Callback<Integer> mOnPeriodChange;
+	private Consumer<Integer> mOnAddFrame, mOnRemoveFrame;
+	private Consumer<Integer> mOnPeriodChange;
 	private final Property<Number> mSelectedFrame;
 
 	public AnimatedTileUI(ObservableList<Vec2> frames, int period)
@@ -80,15 +81,15 @@ public class AnimatedTileUI extends BasicTileUI
 	public int getSelectedFrame() { return (int) mSelectedFrame.getValue(); }
 	public void setSelectedFrame(int idx) { mSelectedFrame.setValue(idx); }
 	
-	public void setOnAddFrame(Callback<Integer> cb) { mOnAddFrame = cb; }
-	public void setOnRemoveFrame(Callback<Integer> cb) { mOnRemoveFrame = cb; }
-	public void setOnPeriodChange(Callback<Integer> cb) { mOnPeriodChange = cb; }
+	public void setOnAddFrame(Consumer<Integer> cb) { mOnAddFrame = cb; }
+	public void setOnRemoveFrame(Consumer<Integer> cb) { mOnRemoveFrame = cb; }
+	public void setOnPeriodChange(Consumer<Integer> cb) { mOnPeriodChange = cb; }
 	
 	private void addFrame(int idx)
 	{
 		if(mOnAddFrame != null)
 		{
-			mOnAddFrame.call(idx);
+			mOnAddFrame.accept(idx);
 		}
 	}
 	
@@ -96,7 +97,7 @@ public class AnimatedTileUI extends BasicTileUI
 	{
 		if(mOnRemoveFrame != null)
 		{
-			mOnRemoveFrame.call(idx);
+			mOnRemoveFrame.accept(idx);
 		}
 	}
 	
@@ -104,7 +105,7 @@ public class AnimatedTileUI extends BasicTileUI
 	{
 		if(mOnPeriodChange != null)
 		{
-			mOnPeriodChange.call(p);
+			mOnPeriodChange.accept(p);
 		}
 	}
 	
@@ -125,6 +126,4 @@ public class AnimatedTileUI extends BasicTileUI
 	{
 		return mRoot;
 	}
-	
-	public static interface Callback<T> { public abstract void call(T v); }
 }

@@ -15,6 +15,7 @@ public class NewTilesetUI extends BasicNewUI
 	{
 		addField("source", "Source", new FileValidator(s -> EditorController.Instance.getLoader().getFile("media", "tileset", s)));
 		addField("size", "Tile Size", EnterableTextField.IS_POSITIVE_INT);
+		addField("animators", "Animators");
 	}
 
 	@Override
@@ -24,7 +25,7 @@ public class NewTilesetUI extends BasicNewUI
 		
 		ts.setSource(getField("source"));
 		ts.setSize(Integer.parseInt(getField("size")));
-		ts.addTile(new StaticTile("0000", new Vec2(0, 0)));
+		ts.addTile(new StaticTile("0000", new Vec2(0, 0), ""));
 		
 		return ts.save();
 	}
