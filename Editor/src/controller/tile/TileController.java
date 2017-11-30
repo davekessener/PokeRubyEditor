@@ -19,20 +19,23 @@ public class TileController
 		mWriter = w;
 		mTile = t;
 		mController = instantiateController();
-		mUI = new TileEditorUI(mController.getUI());
+		
+		TileUI ui = mController.getUI();
+		
+		mUI = new TileEditorUI(ui);
 		
 		mUI.setOnSelect(type -> changeType(type));
 	}
-	
+
 	private void changeType(Type t)
 	{
 		if(t.equals(Type.STATIC))
 		{
-			updateController(new StaticTile(mTile.getID(), mTile.getPosition(), ""));
+			updateController(new StaticTile(mTile.getID(), mTile.getPosition(), mTile.getAnimators()));
 		}
 		else if(t.equals(Type.ANIMATED))
 		{
-			updateController(new AnimatedTile(mTile.getID()));
+			updateController(new AnimatedTile(mTile.getID(), mTile.getAnimators()));
 		}
 		else
 		{

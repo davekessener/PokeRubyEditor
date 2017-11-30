@@ -1,6 +1,7 @@
 package view.tile;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
@@ -23,6 +24,8 @@ public class TileEditorUI implements TileUI
 		types.getItems().addAll(Type.values());
 		types.getSelectionModel().select(ui.getType());
 		types.setPadding(new Insets(0D, 5D, 0D, 0D));
+		
+		BorderPane.setAlignment(types, Pos.CENTER_LEFT);
 		
 		mRoot.setLeft(types);
 		
@@ -51,7 +54,7 @@ public class TileEditorUI implements TileUI
 			mOnSelect.onSelect(t);
 		}
 	}
-
+	
 	@Override
 	public Parent getNode()
 	{

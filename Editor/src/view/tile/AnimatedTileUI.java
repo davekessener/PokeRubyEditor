@@ -6,12 +6,13 @@ import java.util.function.Consumer;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import lib.EnterableTextField;
 import lib.misc.Vec2;
 import lib.observe.ObservableList;
@@ -21,20 +22,22 @@ import static javafx.beans.property.ReadOnlyIntegerProperty.readOnlyIntegerPrope
 
 public class AnimatedTileUI extends BasicTileUI
 {
-	private final HBox mRoot;
+	private final GridPane mRoot;
 	private List<Vec2> mFrames;
 	private TextField mCurrentFrame;
 	private Consumer<Integer> mOnAddFrame, mOnRemoveFrame;
 	private Consumer<Integer> mOnPeriodChange;
 	private final Property<Number> mSelectedFrame;
 
-	public AnimatedTileUI(ObservableList<Vec2> frames, int period)
+	public AnimatedTileUI(ObservableList<Vec2> frames, int period, String anims)
 	{
-		mRoot = new HBox();
+		super(anims);
+		
+		mRoot = new GridPane();
 		mFrames = frames;
 		mSelectedFrame = new SimpleIntegerProperty();
 		
-		mRoot.setSpacing(3D);
+		mRoot.setHgap(3D);
 		
 		EnterableTextField tfFrame, tfPeriod;
 		tfFrame = new EnterableTextField("1");
@@ -43,19 +46,37 @@ public class AnimatedTileUI extends BasicTileUI
 		tfFrame.addValidations(EnterableTextField.IS_POSITIVE_INT.lessThan(() -> mFrames.size() + 1));
 		tfPeriod.addValidations(EnterableTextField.IS_POSITIVE_INT);
 		
+		Node root = super.getRoot();
 		Label lblMax = new Label("/ " + mFrames.size());
 		Label lblMs = new Label("ms");
-		VBox vb = new VBox();
 		Button addPrev = new Button("V");
 		Button addNext = new Button("^");
 		Button deleteBtn = new Button("-");
 		Button btnPrev = new Button("<");
 		Button btnNext = new Button(">");
-		vb.getChildren().addAll(addNext, addPrev);
 		lblMax.setAlignment(Pos.CENTER_LEFT);
 		lblMs.setAlignment(Pos.CENTER_LEFT);
 		mRoot.setAlignment(Pos.CENTER);
-		mRoot.getChildren().addAll(vb, btnPrev, tfFrame, lblMax, btnNext, deleteBtn, tfPeriod, lblMs);
+		
+		mRoot.add(root, 0, 0, 1, 2);
+		mRoot.add(addNext, 1, 0);
+		mRoot.add(addPrev, 1, 1);
+		mRoot.add(btnPrev, 2, 0, 1, 2);
+		mRoot.add(tfFrame, 3, 0, 1, 2);
+		mRoot.add(lblMax, 4, 0, 1, 2);
+		mRoot.add(btnNext, 5, 0, 1, 2);
+		mRoot.add(deleteBtn, 6, 0, 1, 2);
+		mRoot.add(tfPeriod, 7, 0, 1, 2);
+		mRoot.add(lblMs, 8, 0, 1, 2);
+
+		GridPane.setValignment(root, VPos.CENTER);
+		GridPane.setValignment(btnPrev, VPos.CENTER);
+		GridPane.setValignment(tfFrame, VPos.CENTER);
+		GridPane.setValignment(lblMax, VPos.CENTER);
+		GridPane.setValignment(btnNext, VPos.CENTER);
+		GridPane.setValignment(deleteBtn, VPos.CENTER);
+		GridPane.setValignment(tfPeriod, VPos.CENTER);
+		GridPane.setValignment(lblMs, VPos.CENTER);
 
 		tfFrame.setCallback(s -> mSelectedFrame.setValue(Integer.parseInt(s) - 1));
 		

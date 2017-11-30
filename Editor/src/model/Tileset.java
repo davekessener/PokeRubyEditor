@@ -72,12 +72,16 @@ public class Tileset implements JsonModel
 	public abstract static class Tile implements JsonModel
 	{
 		private String sID;
+		private String mAnimators;
 		
 		public String getID() { return sID; }
 		public void setID(String id) { sID = id; }
 		
 		public abstract Vec2 getPosition();
 		public abstract Type getType();
+
+		public String getAnimators() { return mAnimators; }
+		public void setAnimators(String id) { mAnimators = id == null ? "" : id; }
 		
 		@Override
 		public void load(JsonValue value)
@@ -85,19 +89,28 @@ public class Tileset implements JsonModel
 			JsonObject tag = value.asObject();
 			
 			sID = tag.getString("id", null);
+			mAnimators = tag.getString("animation", "");
 		}
 		
 		@Override
 		public JsonValue save()
 		{
-			return new JsonObject().add("id", sID);
+			JsonObject tag = new JsonObject();
+			
+			tag.add("id", sID);
+			
+			if(!mAnimators.isEmpty())
+			{
+				tag.add("animation", mAnimators);
+			}
+			
+			return tag;
 		}
 	}
 	
 	public static class StaticTile extends Tile
 	{
 		private Vec2 vPosition;
-		private String mAnimators;
 		
 		public StaticTile(String id, Vec2 p, String a)
 		{
@@ -128,9 +141,6 @@ public class Tileset implements JsonModel
 			vPosition = p;
 		}
 		
-		public String getAnimators() { return mAnimators; }
-		public void setAnimators(String id) { mAnimators = id == null ? "" : id; }
-		
 		@Override
 		public void load(JsonValue value)
 		{
@@ -139,7 +149,6 @@ public class Tileset implements JsonModel
 			JsonObject tag = value.asObject();
 			
 			vPosition.load(tag.get("at"));
-			mAnimators = tag.getString("animation", "");
 		}
 		
 		@Override
@@ -148,11 +157,6 @@ public class Tileset implements JsonModel
 			JsonObject tag = super.save().asObject();
 			
 			tag.add("at", vPosition.save());
-			
-			if(!mAnimators.isEmpty())
-			{
-				tag.add("animation", mAnimators);
-			}
 			
 			return tag;
 		}
@@ -163,13 +167,14 @@ public class Tileset implements JsonModel
 		private int iPeriod;
 		private final List<Vec2> aFrames;
 		
-		public AnimatedTile() { this(null); }
-		public AnimatedTile(String id)
+		public AnimatedTile() { this(null, ""); }
+		public AnimatedTile(String id, String anims)
 		{
 			setID(id);
 			aFrames = new ArrayList<>();
 			aFrames.add(new Vec2(0, 0));
 			iPeriod = 1;
+			setAnimators(anims);
 		}
 
 		public int getPeriod() { return iPeriod; }

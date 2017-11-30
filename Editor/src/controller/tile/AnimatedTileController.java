@@ -7,7 +7,7 @@ import model.Tileset.AnimatedTile;
 import view.tile.AnimatedTileUI;
 import view.tile.TileUI;
 
-public class AnimatedTileController implements ActualTileController
+public class AnimatedTileController extends BasicTileController
 {
 	private final AnimatedTile mTile;
 	private final AnimatedTileUI mUI;
@@ -16,10 +16,12 @@ public class AnimatedTileController implements ActualTileController
 	
 	public AnimatedTileController(AnimatedTile t, TileWriter w)
 	{
+		super(t, w);
+		
 		mTile = t;
 		mWriter = w;
 		mVertices = ObservableList.Instantiate(t.getFrames());
-		mUI = new AnimatedTileUI(mVertices, t.getPeriod());
+		mUI = new AnimatedTileUI(mVertices, t.getPeriod(), t.getAnimators());
 		
 		mUI.setOnSelection(p -> setSelection(p));
 		mUI.setOnAddFrame(idx -> addFrame(idx));
@@ -27,6 +29,8 @@ public class AnimatedTileController implements ActualTileController
 		mUI.setOnPeriodChange(p -> changePeriod(p));
 		
 		mVertices.addObserver(o -> write());
+		
+		super.registerHandler(mUI);
 	}
 	
 	private void addFrame(int idx)

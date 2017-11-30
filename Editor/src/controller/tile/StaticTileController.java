@@ -6,7 +6,7 @@ import model.Tileset.StaticTile;
 import view.tile.StaticTileUI;
 import view.tile.TileUI;
 
-public class StaticTileController implements ActualTileController
+public class StaticTileController extends BasicTileController
 {
 	private final StaticTile mTile;
 	private final StaticTileUI mUI;
@@ -14,12 +14,15 @@ public class StaticTileController implements ActualTileController
 	
 	public StaticTileController(StaticTile t, TileWriter w)
 	{
+		super(t, w);
+		
 		mTile = t;
 		mWriter = w;
 		mUI = new StaticTileUI(t.getPosition(), t.getAnimators());
 		
 		mUI.setOnSelection(p -> setSelection(p));
-		mUI.setOnAnimatorChange(s -> setAnimators(s));
+		
+		super.registerHandler(mUI);
 	}
 	
 	private void setSelection(Vec2 p)
@@ -29,13 +32,6 @@ public class StaticTileController implements ActualTileController
 		mWriter.write(mTile);
 	}
 	
-	private void setAnimators(String s)
-	{
-		mTile.setAnimators(s);
-		
-		mWriter.write(mTile);
-	}
-
 	@Override
 	public TileUI getUI()
 	{
